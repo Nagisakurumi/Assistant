@@ -5,3 +5,10 @@ G:\workSpace\MyAssistant\Assistant\Assistant\bin\Debug\Assistant.exe
 G:\workSpace\MyAssistant\Assistant\Assistant\bin\Debug\Assistant.pdb
 G:\workSpace\MyAssistant\Assistant\Assistant\obj\Debug\Assistant.exe
 G:\workSpace\MyAssistant\Assistant\Assistant\obj\Debug\Assistant.pdb
+X:\MySpace\Assistant\Assistant\obj\Debug\Assistant.csprojAssemblyReference.cache
+X:\MySpace\Assistant\Assistant\obj\Debug\Assistant.csproj.CoreCompileInputs.cache
+X:\MySpace\Assistant\Assistant\obj\Debug\Assistant.exe
+X:\MySpace\Assistant\Assistant\obj\Debug\Assistant.pdb
+X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.exe.config
+X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.exe
+X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.pdb

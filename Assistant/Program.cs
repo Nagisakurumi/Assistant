@@ -9,9 +9,14 @@ namespace Assistant
 {
     class Program
     {
+        /// <summary>
+        /// C# 插件目录
+        /// </summary>
+        public static readonly string CSharpPlugs = AppDomain.CurrentDomain.BaseDirectory + "\\C#Plugs\\";
+
+        //public static Dictionary<>
 
 
-        [STAThread]
         public static void Main(string[] args)
         {
             ConsoleHelper.hideConsole();
