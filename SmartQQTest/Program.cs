@@ -40,22 +40,27 @@ namespace SmartQQTest
         static void Main(string[] args)
         {
             SmartQQBot smartQQBot = new SmartQQBot();
+            smartQQBot.CheckLoginForntInit();
+            Thread.Sleep(20);
             smartQQBot.Login();
             Thread.Sleep(20);
             ShowImage(smartQQBot.SaveLoginImagePath);
             while (true)
             {
                 Thread.Sleep(5000);
-                smartQQBot.CheckLogin();
+                if (smartQQBot.CheckLogin())
+                {
+                    break;
+                }
             }
+            smartQQBot.ForLogion2();
             Thread.Sleep(20);
-
-
-            //Console.WriteLine(smartQQBot.getCheckptqrtoken("5aDUCwNwDIDrrkHeCPIDZy2z2zHM7AnSZXdJX5UT9syyYMSHCcTq4yemBCFbvd5W"));
-
-            ////string value = "qrsig=0kRs0JaQyY*Fmhsq2Zy3PRR2wkA-pdj9YyCRPcnityOFmi5cGoTKS63K7oKkmAnv;Path=/;Domain=ptlogin2.qq.com;";
+            smartQQBot.Login2();
+            //string value = "qrsig=0kRs0JaQyY*Fmhsq2Zy3PRR2wkA-pdj9YyCRPcnityOFmi5cGoTKS63K7oKkmAnv;Path=/;Domain=ptlogin2.qq.com;";
             //string value = "qrsig=0kRs0JaQyY*Fmhsq2Zy3PRR2wkA-pdj9YyCRPcnityOFmi5cGoTKS63K7oKkmAnv;Path=dddadadasdasd;";
-            //string v = new Regex("=\\b\\S*;") { }.Match(value).Value;
+
+            //Regex regex = new Regex("=(.*?);");
+            //string v =  regex.Match(value).Groups[1].Value;
             //Console.WriteLine(v);
             Console.ReadKey();
         }
