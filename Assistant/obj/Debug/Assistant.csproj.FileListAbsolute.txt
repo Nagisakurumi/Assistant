@@ -12,3 +12,6 @@ X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.exe.config
 X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.exe
 X:\MySpace\Assistant\Assistant\bin\Debug\Assistant.pdb
 X:\MySpace\Assistant\Assistant\obj\Debug\Assistant.csprojAssemblyReference.cache
+F:\ProgramForld\Assisnt\Assistant\Assistant\bin\Debug\Assistant.exe.config
+F:\ProgramForld\Assisnt\Assistant\Assistant\obj\Debug\Assistant.exe
+F:\ProgramForld\Assisnt\Assistant\Assistant\obj\Debug\Assistant.pdb
