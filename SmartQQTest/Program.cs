@@ -40,8 +40,9 @@ namespace SmartQQTest
         }
         static void Main(string[] args)
         {
+            LogLib.Log.ErroStringEvent += Log_ErroStringEvent;
             SmartQQBot smartQQBot = new SmartQQBot();
-            smartQQBot.CheckLoginForntInit();
+            smartQQBot.GetLoginParamter();
             Thread.Sleep(20);
             smartQQBot.Login();
             Thread.Sleep(20);
@@ -50,22 +51,24 @@ namespace SmartQQTest
             ConsoleWriteImage(new Bitmap(smartQQBot.SaveLoginImagePath));
             while (true)
             {
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
                 if (smartQQBot.CheckLogin())
                 {
                     break;
                 }
             }
             smartQQBot.ForLogion2();
-            Thread.Sleep(20);
             smartQQBot.Login2();
-            //string value = "qrsig=0kRs0JaQyY*Fmhsq2Zy3PRR2wkA-pdj9YyCRPcnityOFmi5cGoTKS63K7oKkmAnv;Path=/;Domain=ptlogin2.qq.com;";
-            //string value = "qrsig=0kRs0JaQyY*Fmhsq2Zy3PRR2wkA-pdj9YyCRPcnityOFmi5cGoTKS63K7oKkmAnv;Path=dddadadasdasd;";
-
-            //Regex regex = new Regex("=(.*?);");
-            //string v =  regex.Match(value).Groups[1].Value;
-            //Console.WriteLine(v);
+            smartQQBot.UpdateFrindsList();
             Console.ReadKey();
+        }
+        /// <summary>
+        /// 日志回写
+        /// </summary>
+        /// <param name="erro"></param>
+        private static void Log_ErroStringEvent(string erro)
+        {
+            Console.WriteLine(erro);
         }
 
         /// <summary>

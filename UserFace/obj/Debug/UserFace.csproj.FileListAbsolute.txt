@@ -13,7 +13,6 @@ G:\workSpace\MyAssistant\Assistant\UserFace\obj\Debug\UserFace.dll
 G:\workSpace\MyAssistant\Assistant\UserFace\obj\Debug\UserFace.pdb
 X:\MySpace\Assistant\UserFace\bin\Debug\UserFace.dll
 X:\MySpace\Assistant\UserFace\bin\Debug\UserFace.pdb
-X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csprojAssemblyReference.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\MainWindow.g.cs
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace_MarkupCompile.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace_MarkupCompile.lref
@@ -24,3 +23,4 @@ X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csproj.GenerateResource.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csproj.CoreCompileInputs.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.dll
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.pdb
+X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csprojAssemblyReference.cache

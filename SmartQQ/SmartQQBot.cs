@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using LogLib;
 
 namespace SmartQQ
 {
@@ -15,32 +16,25 @@ namespace SmartQQ
     {
         #region 字段
         /// <summary>
+        /// 所有好友
+        /// </summary>
+        private List<Friend> friends = new List<Friend>();
+        /// <summary>
+        /// 好友的分组
+        /// </summary>
+        private List<FriendGroup> friendGroups = new List<FriendGroup>();
+        /// <summary>
+        /// QQ群
+        /// </summary>
+        private List<Group> groups = new List<Group>();
+        /// <summary>
         /// http请求客户端
         /// </summary>
         private Client client = new Client();
         /// <summary>
-        /// 获取二维码登录请求的地址
-        /// </summary>
-        private string loginURL = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=";
-        private string loginURLCneter = "&e=2&l=M&s=3&d=72&v=4&t=0.";
-        /// <summary>
-        /// 获取二维码登录请求的地址的尾部
-        /// </summary>
-        private string loginURLEnd = "&daid=164&pt_3rd_aid=0";
-        /// <summary>
-        /// 保存登录图片的路径
-        /// </summary>
-        private string saveLoginImagePath = "login.png";
-        /// <summary>
         /// 开始检测登录的时间
         /// </summary>
         private DateTime checkStartTime = DateTime.Now;
-        /// <summary>
-        /// 检测是否已经登录和二维码是否有效
-        /// </summary>
-        private string checkLogin = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=" +
-            "http://web2.qq.com/proxy.html&ptqrtoken=";
-        private string checklogincenter = "&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-";
         /// <summary>
         /// 检测是否登录时候需要的数据
         /// </summary>
@@ -54,50 +48,48 @@ namespace SmartQQ
             { "daid", "164"},
             { "mibao_css", "m_webqq"}
         };
-        //private long checkloginnum = 1530515955825;
+        /// <summary>
+        /// 检测是否登录时候使用
+        /// </summary>
         private string cookieqrsig = "";
         /// <summary>
         /// 验证登录扫码成功后的回调地址
         /// </summary>
         private string checksigURL = "";
         /// <summary>
-        /// 用于拉取qq好友时候的验证码获取地址
+        /// clientid
         /// </summary>
-        private string vfwebqqURL = "http://s.web2.qq.com/api/getvfwebqq?ptwebqq=&clientid=53999199&psessionid=&t=1530601105595";
-
-        /// <summary>
-        /// 检测状态前的初始化
-        /// </summary>
-        private string init_url = "https://ui.ptlogin2.qq.com/cgi-bin/login?" +
-                   "daid=164&target=self&style=16&mibao_css=m_webqq" +
-                   "&appid=501004106&enable_qlogin=0&no_verifyimg=1" +
-                   "&s_url=http%3A%2F%2Fw.qq.com%2Fproxy.html" +
-                   "&f_url=loginerroralert&strong_login=1" +
-                   "&login_state=10&t=20131024001";
-        /// <summary>
-        /// 二次登录地址
-        /// </summary>
-        private string login2URL = "http://d1.web2.qq.com/channel/login2";
-        /// <summary>
-        /// 二次登录的数据
-        /// </summary>
-        private Dictionary<string, string> login2Data = new Dictionary<string, string>()
-        {
-            { "ptwebqq", "" },
-            { "clientid", "53999199"},
-            { "psessionid","" },
-            { "status", "online"}
-        };
+        private long clientid = 53999199;
         /// <summary>
         /// 为了获取QQ好友列表的code
         /// </summary>
-        private string forgetfriendlistcode = "";
+        private string vfwebqq = "";
+        /// <summary>
+        /// ptwebqq
+        /// </summary>
+        private string ptwebqq = "";
+        /// <summary>
+        /// ptwebqq第二次登录时候获取的 
+        /// </summary>
+        private string vfwebqq2 = "";
+        /// <summary>
+        /// psessionid
+        /// </summary>
+        private string psessionid = "";
+        /// <summary>
+        /// uin
+        /// </summary>
+        private long uin = 0;
+        /// <summary>
+        /// hash
+        /// </summary>
+        private string hash = "";
         #endregion
         #region 访问器
         /// <summary>
         /// 登录图片保存路径
         /// </summary>
-        public string SaveLoginImagePath { get => saveLoginImagePath; set => saveLoginImagePath = value; }
+        public string SaveLoginImagePath { get; set; } = "login.png";
         #endregion
         #region 公开方法
         /// <summary>
@@ -106,10 +98,7 @@ namespace SmartQQ
         /// <returns></returns>
         public bool Login()
         {
-            HttpResponseMessage response = client.GetResponse(loginURL + checkloginData["aid"] + loginURLCneter + getRandomNum() + loginURLEnd);
-            Stream stream = response.Content.ReadAsStreamAsync().Result;
-            cookieqrsig = new Regex("=(.*?);").Match((response.Headers.GetValues("Set-Cookie") as string[])[0]).Groups[1].Value;
-            Console.WriteLine(client.GetCookieValueByName("qrsig", response));
+            Stream stream = client.GetStreamAsync(SmartQQAPI.GetQrCode);
             if (File.Exists(SaveLoginImagePath))
             {
                 File.Delete(SaveLoginImagePath);
@@ -119,7 +108,7 @@ namespace SmartQQ
                 stream.CopyTo(filestream);
             }
             stream.Dispose();
-            response.Dispose();
+            cookieqrsig = client.GetCookieByUrl(SmartQQAPI.GetQrCode, "qrsig");
             checkStartTime = DateTime.Now;
             return true;
         }
@@ -128,16 +117,11 @@ namespace SmartQQ
         /// 检测是否登录成功前的检测
         /// </summary>
         /// <returns></returns>
-        public bool CheckLoginForntInit()
+        public bool GetLoginParamter()
         {
-            HttpResponseMessage httpResponseMessage = client.GetResponse(init_url);
-            string html = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            httpResponseMessage.Dispose();
-            httpResponseMessage = null;
+            string html = client.GetStringAsync(SmartQQAPI.GetLoginParamter);
             checkloginData["aid"] = new Regex("<input type=\"hidden\" name=\"aid\" value=\"(\\d+?)\" />").Match(html).Groups[1].Value;
-            
             checkloginData["mibao_css"] = new Regex("g_mibao_css=encodeURIComponent\\(\"(.+?)\"\\)").Match(html).Groups[1].Value;
-
             string vsig = new Regex("g_login_sig=encodeURIComponent\\(\"(.*?)\"\\)").Match(html).Groups[1].Value;
             string vjver = new Regex("g_pt_version=encodeURIComponent\\(\"(\\d +?)\"\\)").Match(html).Groups[1].Value;
             if(!vsig.Equals(""))
@@ -157,31 +141,27 @@ namespace SmartQQ
         /// <returns></returns>
         public bool CheckLogin()
         {
-            string urlend = "";
-            foreach (var item in checkloginData)
+            string result = client.GetStringAsync(SmartQQAPI.VerifyQrCode, hash33(cookieqrsig));
+            if(result.Contains("未失效"))
             {
-                urlend += "&" + item.Key + "=" + item.Value;
+                Log.Write("验证码未失效，请尽快扫码登录");
             }
-            urlend += "&";
-            string url = checkLogin + getCheckptqrtoken() + checklogincenter + (DateTime.Now - checkStartTime).TotalMilliseconds.ToString() + urlend;
-            client.AddHeader("referer", init_url);
-            HttpResponseMessage httpResponseMessage = client.GetResponse(url);
-            Console.WriteLine(httpResponseMessage.Content.ReadAsStringAsync().Result);
-            string[] values = new Regex("'.*'").Match(httpResponseMessage.Content.ReadAsStringAsync().Result).Value.Split(',');
+            else if(result.Contains("登录成功"))
+            {
+                Log.Write("检测扫码登录成功!");
+            }
+            string[] values = new Regex("'.*'").Match(result).Value.Split(',');
             int value = Convert.ToInt32(values[0].Substring(1, values[0].Length - 2));
-            urlend = null;
-            url = null;
+            
             if (value == 0)
             {
-                Console.WriteLine(client.GetCookieValueByName("ptwebqq", httpResponseMessage));
-                client.RemoveHeader("referer");
+                ptwebqq = client.GetCookieByUrl(SmartQQAPI.VerifyQrCode, "ptwebqq", hash33(cookieqrsig));
+                Log.Write("ptwebqq -> " + ptwebqq);
                 checksigURL = values[2].Substring(1, values[2].Length - 2);
-                values = null;
                 return true;
             }
             else
             {
-                values = null;
                 return false;
             }
         }
@@ -191,21 +171,14 @@ namespace SmartQQ
         /// <returns></returns>
         public bool ForLogion2()
         {
-            forgetfriendlistcode = "";
-            HttpResponseMessage httpResponseMessage = null;
-            httpResponseMessage = client.GetResponse(checksigURL);
-            httpResponseMessage.Dispose();
-            httpResponseMessage = null;
-
-
-            httpResponseMessage = client.GetResponse(vfwebqqURL);
-            //httpResponseMessage = client.PostResponse(vfwebqqURL, vfwebqqData);
-            Console.WriteLine(httpResponseMessage.Content.ReadAsStringAsync().Result);
-            //string result = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            JObject jObject = (JObject)JsonConvert.DeserializeObject(httpResponseMessage.Content.ReadAsStringAsync().Result);
-            forgetfriendlistcode = jObject["retcode"].ToString();
-            httpResponseMessage.Dispose();
-            if(forgetfriendlistcode.Equals(""))
+            vfwebqq = "";
+            HttpResponseMessage httpResponseMessage  = client.GetAsync(new SmartQQAPI(checksigURL, null));
+            vfwebqq = "";
+            //client.GetAsync(new SmartQQAPI(httpResponseMessage.Headers.Location.ToString(), null));
+            JObject jObject = client.GetJsonAsync(SmartQQAPI.GetVfwebqq, ptwebqq);
+            Log.Write("Result:" + jObject.ToString());
+            vfwebqq = jObject["result"]["vfwebqq"].ToString();
+            if(vfwebqq.Equals(""))
             {
                 return false;
             }
@@ -217,9 +190,122 @@ namespace SmartQQ
         /// <returns></returns>
         public bool Login2()
         {
-            HttpResponseMessage httpResponseMessage = client.PostResponse(login2URL, login2Data);
-            Console.WriteLine(httpResponseMessage.Content.ReadAsStringAsync().Result);
+            var r = new JObject
+            {
+                {"ptwebqq", ptwebqq},
+                {"clientid", clientid},
+                {"psessionid", ""},
+                {"status", "online"}
+            };
+
+            JObject jObject = client.PostJsonAsync(SmartQQAPI.GetUinAndPsessionid, r);
+            psessionid = jObject["result"]["psessionid"].ToString();
+            vfwebqq2 = jObject["result"]["vfwebqq"].ToString();
+            uin = Convert.ToInt64(jObject["result"]["uin"].ToString());
+            hash = getHash(uin, ptwebqq);
             return true;
+        }
+        /// <summary>
+        /// 更新好友列表信息
+        /// </summary>
+        /// <returns></returns>
+        public bool UpdateFrindsList()
+        {
+            try
+            {
+                JObject jObject = new JObject
+                {
+                    { "vfwebqq", vfwebqq }, { "hash", hash }
+                };
+
+                JToken response = client.PostJsonAsync(SmartQQAPI.GetFriendList,
+                    jObject)["result"];
+                Log.Write(response.ToString());
+                ///好友基本信息
+                friends.Clear();
+                foreach (var item in response["friends"] as JArray)
+                {
+
+                    friends.Add(new Friend()
+                    {
+                        Flag = Convert.ToInt64(item["flag"].ToString()),
+                        Uin = Convert.ToInt64(item["uin"].ToString()),
+                        GroupId = Convert.ToInt64(item["categories"].ToString())
+                    });
+                }
+                ///好友备注信息
+                foreach (var item in response["marknames"] as JArray)
+                {
+                    Friend friend = friends.Where(p => p.Uin == Convert.ToInt64(item["uin"].ToString())).First();
+                    if (friend != null)
+                    {
+                        friend.MarkName = item["markname"].ToString();
+                        friend.Type = item["type"].ToString();
+                    }
+                }
+                ///好友分组信息
+                friendGroups.Clear();
+                foreach (var item in response["categories"] as JArray)
+                {
+                    friendGroups.Add(new FriendGroup(friends)
+                    {
+                        Index = Convert.ToInt32(item["index"].ToString()),
+                        Name = item["name"].ToString()
+                    });
+                }
+                ///vip信息
+                foreach (var item in response["vipinfo"] as JArray)
+                {
+                    Friend friend = friends.Where(p => p.Uin == Convert.ToInt64(item["u"].ToString())).First();
+                    if (friend != null)
+                    {
+                        friend.VipLevel = Convert.ToInt32(item["vip_level"].ToString());
+                        friend.IsVip = item["is_vip"].ToString().Equals("1");
+                    }
+                }
+                ///好友info信息
+                foreach (var item in response["info"] as JArray)
+                {
+                    Friend friend = friends.Where(p => p.Uin == Convert.ToInt64(item["uin"].ToString())).First();
+                    if (friend != null)
+                    {
+                        friend.Face = Convert.ToInt32(item["face"].ToString());
+                        friend.Nickname = item["nick"].ToString();
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                Log.Write("获取好友信息失败!");
+                return false;
+            }
+        }
+        /// <summary>
+        /// 更新QQ群信息
+        /// </summary>
+        /// <returns></returns>
+        public bool UpdateGroup()
+        {
+            try
+            {
+                Log.Write("开始获取群列表");
+
+                JToken response = client.PostJsonAsync(SmartQQAPI.GetGroupList,
+                    new JObject { { "vfwebqq", vfwebqq }, { "hash", hash } })["result"];
+                Log.Write(response);
+                foreach (var item in response["gmasklist"] as JArray)
+                {
+
+                }
+                    
+                return true;
+            }
+            catch (Exception)
+            {
+                Log.Write("获取群信息失败!");
+                return false;
+            }
         }
         #endregion
         #region 私有方法
@@ -244,7 +330,7 @@ namespace SmartQQ
         /// </summary>
         /// <param name="cookieqrsig"></param>
         /// <returns></returns>
-        private string getCheckptqrtoken()
+        private string hash33(string cookieqrsig)
         {
             int value = 0;
             foreach (var item in cookieqrsig)
@@ -253,6 +339,38 @@ namespace SmartQQ
             }
             value = value & 2147483647;
             return value.ToString();
+        }
+        /// <summary>
+        /// 获取hash value
+        /// </summary>
+        /// <param name="uin"></param>
+        /// <param name="ptwebqq"></param>
+        /// <returns></returns>
+        private string getHash(long uin, string ptwebqq)
+        {
+            var n = new int[4];
+            for (var T = 0; T < ptwebqq.Length; T++)
+                n[T % 4] ^= ptwebqq[T];
+            string[] u = { "EC", "OK" };
+            var v = new long[4];
+            v[0] = ((uin >> 24) & 255) ^ u[0][0];
+            v[1] = ((uin >> 16) & 255) ^ u[0][1];
+            v[2] = ((uin >> 8) & 255) ^ u[1][0];
+            v[3] = (uin & 255) ^ u[1][1];
+
+            var u1 = new long[8];
+
+            for (var t = 0; t < 8; t++)
+                u1[t] = t % 2 == 0 ? n[t >> 1] : v[t >> 1];
+
+            string[] n1 = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };
+            var v1 = "";
+            foreach (var aU1 in u1)
+            {
+                v1 += n1[(int)((aU1 >> 4) & 15)];
+                v1 += n1[(int)(aU1 & 15)];
+            }
+            return v1;
         }
         #endregion
     }
