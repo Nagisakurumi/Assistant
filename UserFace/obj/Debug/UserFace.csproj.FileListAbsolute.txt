@@ -23,4 +23,3 @@ X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csproj.GenerateResource.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csproj.CoreCompileInputs.cache
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.dll
 X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.pdb
-X:\MySpace\Assistant\UserFace\obj\Debug\UserFace.csprojAssemblyReference.cache

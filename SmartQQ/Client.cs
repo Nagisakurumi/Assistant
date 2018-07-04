@@ -252,6 +252,23 @@ namespace SmartQQ
             HttpResponseMessage httpResponseMessage = PostResponseAsync(smartQQAPI, content).Result;
             return Newtonsoft.Json.JsonConvert.DeserializeObject(httpResponseMessage.Content.ReadAsStringAsync().Result) as JObject;
         }
+        /// <summary>
+        /// Post请求获取返回json
+        /// </summary>
+        /// <param name="smartQQAPI"></param>
+        /// <param name="content"></param>
+        /// <param name="retryTimes">重新尝试次数</param>
+        /// <returns></returns>
+        public JObject PostJsonAsync(SmartQQAPI smartQQAPI, JObject content, int retryTimes)
+        {
+            HttpResponseMessage httpResponseMessage = null;
+            httpResponseMessage = PostResponseAsync(smartQQAPI, content).Result;
+            while (httpResponseMessage.StatusCode != HttpStatusCode.OK && retryTimes -- >= 0)
+            {
+                httpResponseMessage = PostResponseAsync(smartQQAPI, content).Result;
+            }
+            return Newtonsoft.Json.JsonConvert.DeserializeObject(httpResponseMessage.Content.ReadAsStringAsync().Result) as JObject;
+        }
 
         #region 私有方法
         /// <summary>

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartQQ", "SmartQQ\SmartQQ.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartQQTest", "SmartQQTest\SmartQQTest.csproj", "{202B3C8F-C6BE-4C3C-B3F1-0A9F674FA082}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheLib", "CacheLib\CacheLib.csproj", "{4C99028F-168C-467A-BC60-C0C2E7384F0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{202B3C8F-C6BE-4C3C-B3F1-0A9F674FA082}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{202B3C8F-C6BE-4C3C-B3F1-0A9F674FA082}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{202B3C8F-C6BE-4C3C-B3F1-0A9F674FA082}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C99028F-168C-467A-BC60-C0C2E7384F0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C99028F-168C-467A-BC60-C0C2E7384F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C99028F-168C-467A-BC60-C0C2E7384F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C99028F-168C-467A-BC60-C0C2E7384F0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

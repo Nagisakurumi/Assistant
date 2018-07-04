@@ -13,7 +13,6 @@ namespace SmartQQ
         /// 好友名称
         /// </summary>
         public string Name { get; set; }
-
         /// <summary>
         /// 好友的uin
         /// </summary>
@@ -31,9 +30,13 @@ namespace SmartQQ
         /// </summary>
         public long Flag { get; set; }
         /// <summary>
+        /// 好友的详细信息
+        /// </summary>
+        public FriendInfo FriendInfo { get; set; }
+        /// <summary>
         /// 昵称
         /// </summary>
-        [JsonProperty("Nickname")]
+        [JsonProperty("nick")]
         public string Nickname { get; internal set; }
         /// <summary>
         ///     备注姓名。
@@ -59,101 +62,9 @@ namespace SmartQQ
         /// </summary>
         [JsonProperty("vipLevel")]
         public int VipLevel { get; internal set; }
-
-        /// <summary>
-        ///     个性签名。
-        /// </summary>
-        [JsonIgnore]
-        public string Bio { get; internal set; }
-
-        /// <summary>
-        ///     生日。
-        /// </summary>
-        [JsonIgnore]
-        public string Birthday { get; internal set; }
-
-        /// <summary>
-        ///     座机号码。
-        /// </summary>
-        [JsonIgnore]
-        public string Phone { get; internal set; }
-
-        /// <summary>
-        ///     手机号码。
-        /// </summary>
-        [JsonIgnore]
-        public string Cellphone { get; internal set; }
-
-        /// <summary>
-        /// 邮箱地址。
-        /// </summary>
-        [JsonIgnore]
-        public string Email { get; internal set; }
-
-        /// <summary>
-        /// 职业。
-        /// </summary>
-        [JsonIgnore]
-        public string Job { get; internal set; }
-
-        /// <summary>
-        /// 个人主页。
-        /// </summary>
-        [JsonIgnore]
-        public string Homepage { get; internal set; }
-
-        /// <summary>
-        /// 学校。
-        /// </summary>
-        [JsonIgnore]
-        public string School { get; internal set; }
-
-        /// <summary>
-        /// 国家。
-        /// </summary>
-        [JsonIgnore]
-        public string Country { get; internal set; }
-
-        /// <summary>
-        /// 省份。
-        /// </summary>
-        [JsonIgnore]
-        public string Province { get; internal set; }
-
-        /// <summary>
-        /// 城市。
-        /// </summary>
-        [JsonIgnore]
-        public string City { get; internal set; }
-
-        /// <summary>
-        /// 性别。
-        /// </summary>
-        [JsonIgnore]
-        public string Gender { get; internal set; }
-
-        /// <summary>
-        /// 生肖。
-        /// </summary>
-        [JsonIgnore]
-        public int Shengxiao { get; internal set; }
-
-        /// <summary>
-        ///     某信息字段。意义暂不明确。
-        /// </summary>
-        [JsonIgnore]
-        public string Personal { get; internal set; }
-
-        /// <summary>
-        ///     某信息字段。意义暂不明确。
-        /// </summary>
-        [JsonIgnore]
-        public int VipInfo { get; internal set; }
-
         /// <inheritdoc />
         [JsonIgnore]
         public long QQNumber { get; internal set; }
-
         /// <inheritdoc />
         [JsonProperty("userId")]
         public long Id { get; internal set; }

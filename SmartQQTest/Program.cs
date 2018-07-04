@@ -60,6 +60,7 @@ namespace SmartQQTest
             smartQQBot.ForLogion2();
             smartQQBot.Login2();
             smartQQBot.UpdateFrindsList();
+            smartQQBot.UpdateGroup();
             Console.ReadKey();
         }
         /// <summary>

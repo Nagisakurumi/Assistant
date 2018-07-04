@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using LogLib;
+using CacheLib;
 
 namespace SmartQQ
 {
@@ -16,17 +17,9 @@ namespace SmartQQ
     {
         #region 字段
         /// <summary>
-        /// 所有好友
+        /// 消息id
         /// </summary>
-        private List<Friend> friends = new List<Friend>();
-        /// <summary>
-        /// 好友的分组
-        /// </summary>
-        private List<FriendGroup> friendGroups = new List<FriendGroup>();
-        /// <summary>
-        /// QQ群
-        /// </summary>
-        private List<Group> groups = new List<Group>();
+        private long messageId = 43690001;
         /// <summary>
         /// http请求客户端
         /// </summary>
@@ -84,12 +77,46 @@ namespace SmartQQ
         /// hash
         /// </summary>
         private string hash = "";
+        /// <summary>
+        /// 缓存
+        /// </summary>
+        internal Cache cache = new Cache();
         #endregion
         #region 访问器
+        /// <summary>
+        /// 重试重新发送的次数
+        /// </summary>
+        public int RetryTimes { get; set; } = 5;
         /// <summary>
         /// 登录图片保存路径
         /// </summary>
         public string SaveLoginImagePath { get; set; } = "login.png";
+        /// <summary>
+        /// 所有的好友信息
+        /// </summary>
+        public List<Friend> Friends => getCache<List<Friend>>(SmartQQStaticString.Friends, UpdateFrindsList);
+        /// <summary>
+        /// 所有的分组信息
+        /// </summary>
+        public List<FriendGroup> FriendGroups => getCache<List<FriendGroup>>(SmartQQStaticString.FriendsGroup, UpdateFrindsList);
+        /// <summary>
+        /// 所有的QQ群信息
+        /// </summary>
+        public List<Group> Groups => getCache<List<Group>>(SmartQQStaticString.Group, UpdateGroup);
+        /// <summary>
+        /// 自己账号的信息
+        /// </summary>
+        public FriendInfo SelfInfo => updateSelfAccountInfo();
+        /// <summary>
+        /// 是否已经登录
+        /// </summary>
+        public bool IsLogin => isLogin();
+        /// <summary>
+        /// 获取群的详细信息
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public GroupInfo this[Group group] => GetGroupInfo(group);
         #endregion
         #region 公开方法
         /// <summary>
@@ -202,7 +229,15 @@ namespace SmartQQ
             psessionid = jObject["result"]["psessionid"].ToString();
             vfwebqq2 = jObject["result"]["vfwebqq"].ToString();
             uin = Convert.ToInt64(jObject["result"]["uin"].ToString());
-            hash = getHash(uin, ptwebqq);
+            if(testLogin())
+            {
+                hash = getHash(uin, ptwebqq);
+            }
+            else
+            {
+                Log.Write("测试登录失败!");
+                return false;
+            }
             return true;
         }
         /// <summary>
@@ -213,6 +248,15 @@ namespace SmartQQ
         {
             try
             {
+                /// <summary>
+                /// 所有好友
+                /// </summary>
+                List<Friend> friends = new List<Friend>();
+                /// <summary>
+                /// 好友的分组
+                /// </summary>
+                List<FriendGroup> friendGroups = new List<FriendGroup>();
+                
                 JObject jObject = new JObject
                 {
                     { "vfwebqq", vfwebqq }, { "hash", hash }
@@ -220,7 +264,7 @@ namespace SmartQQ
 
                 JToken response = client.PostJsonAsync(SmartQQAPI.GetFriendList,
                     jObject)["result"];
-                Log.Write(response.ToString());
+                //Log.Write(response.ToString());
                 ///好友基本信息
                 friends.Clear();
                 foreach (var item in response["friends"] as JArray)
@@ -273,6 +317,14 @@ namespace SmartQQ
                         friend.Nickname = item["nick"].ToString();
                     }
                 }
+                ///更新所有好友的详细信息
+                foreach (var item in friends)
+                {
+                    updateFriendInfo(item);
+                }
+
+                cache.UpdateValueCache(SmartQQStaticString.Friends, friends, 1200);
+                cache.UpdateValueCache(SmartQQStaticString.FriendsGroup, friendGroups, 3000);
                 return true;
             }
             catch (Exception)
@@ -288,17 +340,29 @@ namespace SmartQQ
         public bool UpdateGroup()
         {
             try
-            {
+            {   
+                /// <summary>
+                /// QQ群
+                /// </summary>
+                List<Group> groups = new List<Group>();
                 Log.Write("开始获取群列表");
 
                 JToken response = client.PostJsonAsync(SmartQQAPI.GetGroupList,
                     new JObject { { "vfwebqq", vfwebqq }, { "hash", hash } })["result"];
-                Log.Write(response);
-                foreach (var item in response["gmasklist"] as JArray)
+                Log.Write(response.ToString());
+                ///QQ群信息
+                groups.Clear();
+                foreach (var item in response["gnamelist"] as JArray)
                 {
-
+                    groups.Add(new Group()
+                    {
+                        Flag = Convert.ToInt64(item["flag"].ToString()),
+                        Id = Convert.ToInt64(item["gid"].ToString()),
+                        Name = item["name"].ToString(),
+                        Code = Convert.ToInt64(item["code"].ToString())
+                    });
                 }
-                    
+                cache.UpdateValueCache(SmartQQStaticString.Group, groups, 1000);
                 return true;
             }
             catch (Exception)
@@ -306,6 +370,48 @@ namespace SmartQQ
                 Log.Write("获取群信息失败!");
                 return false;
             }
+        }
+        /// <summary>
+        /// 获取qq号由uin
+        /// </summary>
+        /// <param name="uin"></param>
+        /// <returns></returns>
+        public long GetQQByUin(long uin)
+        {
+            long qq = ((JObject)client.GetJsonAsync(SmartQQAPI.GetQQById, 
+                uin, vfwebqq, new Random().NextDouble())[
+                    "result"])["account"].Value<long>();
+            return qq;
+        }
+        /// <summary>
+        /// 获取qq号
+        /// </summary>
+        /// <param name="friend"></param>
+        /// <returns></returns>
+        public long GetQQ(Friend friend)
+        {
+            return GetQQByUin(friend.Uin);
+        }
+        /// <summary>
+        /// 获取群成员信息
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public GroupInfo GetGroupInfo(Group group)
+        {
+            GroupInfo groupInfo = cache.GetValueCache<GroupInfo>(group.Code.ToString());
+            if(groupInfo == null)
+            {
+                JObject jObject = client.GetJsonAsync(SmartQQAPI.GetGroupInfo, group.Code, vfwebqq);
+                groupInfo = jObject["result"]["ginfo"].ToObject<GroupInfo>();
+                cache.UpdateValueCache(group.Code.ToString(), groupInfo, 3600);
+            }
+            return groupInfo;
+        }
+        
+        public bool SendPrivateMessage(string message, Friend friend)
+        {
+            return true;
         }
         #endregion
         #region 私有方法
@@ -324,7 +430,6 @@ namespace SmartQQ
             }
             return nums;
         }
-
         /// <summary>
         /// 根据登录cookie中的qrsig生成ptqrtoken
         /// </summary>
@@ -371,6 +476,103 @@ namespace SmartQQ
                 v1 += n1[(int)(aU1 & 15)];
             }
             return v1;
+        }
+        /// <summary>
+        /// 获取缓存的对象
+        /// </summary>
+        /// <typeparam name="T">缓存的类型</typeparam>
+        /// <param name="key">缓存的key</param>
+        /// <param name="action">缓存更新的函数</param>
+        /// <returns></returns>
+        private T getCache<T>(string key, Func<bool> action)
+        {
+            T t= cache.GetValueCache<T>(key);
+            if(t == null)
+            {
+                action();
+            }
+            return cache.GetValueCache<T>(key);
+        }
+
+        /// <summary>
+        /// 解决103错误的问题
+        /// </summary>
+        /// <returns></returns>
+        private bool testLogin()
+        {
+            Log.Write("开始向服务器发送测试连接请求");
+            var result = client.GetStringAsync(SmartQQAPI.TestLogin, vfwebqq, clientid, psessionid, new Random().NextDouble());
+            return JObject.Parse(result)["retcode"].Value<int?>() == 0;
+        }
+        /// <summary>
+        /// 检查是否登录
+        /// </summary>
+        /// <returns></returns>
+        private bool isLogin()
+        {
+            return true;
+        }
+        /// <summary>
+        /// 更新好友的详细信息
+        /// </summary>
+        /// <param name="friend">好友</param>
+        /// <returns></returns>
+        private bool updateFriendInfo(Friend friend)
+        {
+            JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
+            friend.FriendInfo = null;
+            friend.FriendInfo = jObject["result"].ToObject<FriendInfo>();
+            return true;
+        }
+        /// <summary>
+        /// 更新自己账户的信息
+        /// </summary>
+        /// <returns></returns>
+        private FriendInfo updateSelfAccountInfo()
+        {
+            FriendInfo info = cache.GetValueCache<FriendInfo>(SmartQQStaticString.SelfInfo);
+            if(info == null)
+            {
+                info = ((JObject)client.GetJsonAsync(SmartQQAPI.GetAccountInfo)["result"]).ToObject<FriendInfo>();
+            }
+            return info;
+        }
+        /// <summary>
+        /// 消息循环
+        /// </summary>
+        private void pollAllMessageLoop()
+        {
+
+        }
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="url">请求的url</param>
+        /// <param name="messageType">消息类型</param>
+        /// <param name="id">消息发送方向的id</param>
+        /// <param name="msg">消息内容</param>
+        /// <returns></returns>
+        internal bool SendMessage(SmartQQAPI url, Message.MessageType messageType, long id, string msg)
+        {
+            var response = client.PostJsonAsync(url, new JObject
+            {
+                {SmartQQStaticString.GetParamNameByMessageType(messageType), id},
+                {
+                    "content",
+                    new JArray
+                        {
+                            SmartQQStaticString.TranslateEmoticons(msg),
+                            new JArray {"font", JObject.FromObject(Font.DefaultFont)}
+                        }
+                        .ToString(Formatting.None)
+                },
+                {"face", 573},
+                {"clientid", clientid},
+                {"msg_id", messageId++},
+                {"psessionid", psessionid}
+            }, RetryTimes);
+
+            return true;
         }
         #endregion
     }
