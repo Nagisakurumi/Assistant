@@ -10,6 +10,10 @@ namespace SmartQQ
     public class Friend : IMessageSource
     {
         /// <summary>
+        /// qq
+        /// </summary>
+        internal SmartQQBot SmartQQBot { get; set; }
+        /// <summary>
         /// 消息来源的id
         /// </summary>
         public long Id { get => this.Uin; }
@@ -36,16 +40,14 @@ namespace SmartQQ
         /// <summary>
         /// 好友的详细信息
         /// </summary>
-        public FriendInfo FriendInfo { get; set; }
+        public FriendInfo FriendInfo => SmartQQBot.updateFriendInfo(this);
         /// <summary>
         /// 昵称
         /// </summary>
-        [JsonProperty("nick")]
         public string Nickname { get; internal set; }
         /// <summary>
         ///     备注姓名。
         /// </summary>
-        [JsonProperty("markname")]
         public string MarkName { get; internal set; }
         /// <summary>
         /// 类型(意义不明)
@@ -58,13 +60,11 @@ namespace SmartQQ
         /// <summary>
         ///     QQ会员状态。
         /// </summary>
-        [JsonProperty("vip")]
         public bool IsVip { get; internal set; }
 
         /// <summary>
         ///     会员等级。
         /// </summary>
-        [JsonProperty("vipLevel")]
         public int VipLevel { get; internal set; }
         /// <inheritdoc />
         [JsonIgnore]

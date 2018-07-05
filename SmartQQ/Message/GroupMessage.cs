@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,30 +16,62 @@ namespace SmartQQ.Message
         /// <summary>
         /// qq管理
         /// </summary>
+        [JsonIgnore]
         internal SmartQQBot SmartQQBot { get; set; }
         /// <summary>
         /// 消息来源
         /// </summary>
+        [JsonIgnore]
         public IMessageSource MessageSource => SmartQQBot.Groups.Where(p => p.Id == SenderId).First();
         /// <summary>
         /// 消息内容
         /// </summary>
-        [JsonProperty("content")]
+        [JsonIgnore]
         public string Content { get; internal set; }
+        /// <summary>
+        /// 字体
+        /// </summary>
+        [JsonIgnore]
+        public Font Font { get; set; }
+        /// <summary>
+        /// 群编号
+        /// </summary>
+        [JsonProperty("group_code")]
+        public long GroupCode { get; set; }
         /// <summary>
         /// 消息类型
         /// </summary>
+        [JsonIgnore]
         public MessageType MessageType => MessageType.GroupMessage;
         /// <summary>
         /// 接受消息的时间
         /// </summary>
         [JsonProperty("time")]
-        public DateTime ReciveTime { get; internal set; }
+        public int ReciveTime { get; internal set; }
         /// <summary>
         /// 发送者id
         /// </summary>
         [JsonProperty("from_uin")]
         public long SenderId { get; set; }
+        /// <summary>
+        /// 接受者id
+        /// </summary>
+        [JsonProperty("to_uin")]
+        public long ReciveId { get; set; }
+        /// <summary>
+        ///     用于parse消息和字体的对象。
+        /// </summary>
+        [JsonProperty("content")]
+        internal JArray ContentAndFont
+        {
+            set
+            {
+                Font = ((JArray)value.First).Last.ToObject<Font>();
+                value.RemoveAt(0);
+                foreach (var shit in value)
+                    Content += SmartQQStaticString.ParseEmoticons(shit);
+            }
+        }
 
         /// <summary>
         /// 回复消息
@@ -54,8 +87,6 @@ namespace SmartQQ.Message
         /// </summary>
         public GroupMessage()
         {
-            
-            this.ReciveTime = DateTime.Now;
         }
     }
 }

@@ -74,7 +74,7 @@ namespace CacheLib
         public T GetValueCache<T>(string key)
         {
             object obj = GetValueCache(key);
-            return obj == null ? (T)obj : default(T);
+            return obj == null ? default(T) : (T)obj;
         }
         /// <summary>
         /// 更新缓存里的对象，如果不存在则添加

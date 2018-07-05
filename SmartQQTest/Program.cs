@@ -15,17 +15,18 @@ namespace SmartQQTest
 {
     class Program
     {
-        
+        static SmartQQBot smartQQBot = new SmartQQBot();
         static void Main(string[] args)
         {
             LogLib.Log.ErroStringEvent += Log_ErroStringEvent;
-            SmartQQBot smartQQBot = new SmartQQBot();
+            
             smartQQBot.GetLoginParamter();
             Thread.Sleep(20);
             smartQQBot.Login();
             Thread.Sleep(20);
 
             ConsoleHelper.ConsoleWriteImage(new Bitmap(smartQQBot.SaveLoginImagePath));
+            Log.Write("已经完成二维码的下载，请尽快扫码!");
             while (true)
             {
                 Thread.Sleep(2000);
@@ -57,7 +58,8 @@ namespace SmartQQTest
         /// <param name="message"></param>
         private static void MessageCallBack(IMessage message)
         {
-            Log.Write(message.MessageType, "--->",  message.Content);
+            FriendInfo friend = smartQQBot[message.SenderId];
+            Log.Write(message.MessageType, friend.Nickname,  "--->",  message.Content);
         }
     }
 }

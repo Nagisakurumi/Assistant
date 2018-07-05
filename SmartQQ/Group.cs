@@ -13,6 +13,11 @@ namespace SmartQQ
     public class Group : IMessageSource
     {
         /// <summary>
+        /// qq
+        /// </summary>
+        [JsonIgnore]
+        internal SmartQQBot SmartQQBot { get; set; }
+        /// <summary>
         ///     意义尚不明确。
         /// </summary>
         [JsonProperty("flag")]
@@ -44,10 +49,10 @@ namespace SmartQQ
         public string Alias { get; set; }
 
         /// <summary>
-        ///     成员。
+        /// QQ详细信息
         /// </summary>
         [JsonIgnore]
-        public List<Friend> Members { get; set; }
+        public GroupInfo GroupInfo => SmartQQBot.updateGroupInfo(this);
 
         /// <summary>
         ///     已登录账户在此群的群名片。

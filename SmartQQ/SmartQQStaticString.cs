@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +63,17 @@ namespace SmartQQ
                 default:
                     return null;
             }
+        }
+        /// <summary>
+        ///     将一个消息JSON中的节点转换为表情的文字描述或文字本身。
+        /// </summary>
+        /// <param name="token">JSON节点。</param>
+        /// <returns>文字。</returns>
+        public static string ParseEmoticons(JToken token)
+        {
+            if (token is JArray)
+                return token.ToString(Formatting.None);
+            return token.Value<string>();
         }
     }
 }

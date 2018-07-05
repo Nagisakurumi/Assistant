@@ -17,17 +17,25 @@ namespace SmartQQ.Message
         /// </summary>
         string Content { get; }
         /// <summary>
+        /// 字体
+        /// </summary>
+        Font Font { get; }
+        /// <summary>
         /// 消息类型
         /// </summary>
         MessageType MessageType { get; }
         /// <summary>
         /// 接受的时间
         /// </summary>
-        DateTime ReciveTime { get; }
+        int ReciveTime { get; }
         /// <summary>
         ///     发送者ID。
         /// </summary>
         long SenderId { get; set; }
+        /// <summary>
+        ///  接受者ID。
+        /// </summary>
+        long ReciveId { get; set; }
         /// <summary>
         /// 回复消息
         /// </summary>

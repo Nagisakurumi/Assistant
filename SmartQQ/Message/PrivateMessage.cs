@@ -18,8 +18,12 @@ namespace SmartQQ.Message
         /// <summary>
         /// 消息内容
         /// </summary>
-        [JsonProperty("content")]
+        [JsonIgnore]
         public string Content { get; set; }
+        /// <summary>
+        /// 字体
+        /// </summary>
+        public Font Font { get; set; }
         /// <summary>
         /// 消息类型
         /// </summary>
@@ -29,7 +33,7 @@ namespace SmartQQ.Message
         /// 接受的时间
         /// </summary>
         [JsonProperty("time")]
-        public DateTime ReciveTime { get; set; }
+        public int ReciveTime { get; set; }
         /// <summary>
         /// 消息来源
         /// </summary>
@@ -39,7 +43,25 @@ namespace SmartQQ.Message
         /// </summary>
         [JsonProperty("from_uin")]
         public long SenderId { get; set; }
-
+        /// <summary>
+        /// 接受者id
+        /// </summary>
+        [JsonProperty("to_uin")]
+        public long ReciveId { get; set; }
+        /// <summary>
+        ///     用于parse消息和字体的对象。
+        /// </summary>
+        [JsonProperty("content")]
+        internal JArray ContentAndFont
+        {
+            set
+            {
+                Font = ((JArray)value.First).Last.ToObject<Font>();
+                value.RemoveAt(0);
+                foreach (var shit in value)
+                    Content += SmartQQStaticString.ParseEmoticons(shit);
+            }
+        }
         /// <summary>
         /// 回复消息
         /// </summary>
@@ -52,9 +74,8 @@ namespace SmartQQ.Message
         /// <summary>
         /// 构造函数
         /// </summary>
-        public PrivateMessage(JObject jObject)
+        public PrivateMessage()
         {
-            ReciveTime = DateTime.Now;
 
         }
     }

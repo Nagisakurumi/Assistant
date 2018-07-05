@@ -124,6 +124,10 @@ namespace SmartQQ
         /// </summary>
         public FriendInfo SelfInfo => updateSelfAccountInfo();
         /// <summary>
+        /// 自己的qq号
+        /// </summary>
+        public long MyQQNum => GetQQByUin(SelfInfo.Uin);
+        /// <summary>
         /// 是否已经登录
         /// </summary>
         public bool IsLogin => isLogin();
@@ -137,6 +141,24 @@ namespace SmartQQ
         /// 消息派发
         /// </summary>
         public Action<IMessage> MessageCallBack { get; set; }
+        /// <summary>
+        /// 获取好友信息
+        /// </summary>
+        /// <param name="uin"></param>
+        /// <returns></returns>
+        public FriendInfo this[long uin]
+        {
+            get
+            {
+                List<Friend> fs = Friends.Where(p => p.Uin == uin).ToList();
+                if (fs.Count == 0)
+                    return SelfInfo.Uin == uin ? SelfInfo : null;
+                else
+                {
+                    return fs.First().FriendInfo;
+                }
+            }
+        }
         #endregion
         #region 公开方法
         /// <summary>
@@ -268,6 +290,7 @@ namespace SmartQQ
         {
             try
             {
+                Log.Write("开始更新好友列表信息,和分组信息!");
                 /// <summary>
                 /// 所有好友
                 /// </summary>
@@ -287,15 +310,27 @@ namespace SmartQQ
                 //Log.Write(response.ToString());
                 ///好友基本信息
                 friends.Clear();
-                foreach (var item in response["friends"] as JArray)
+                ///好友info信息
+                foreach (var item in response["info"] as JArray)
                 {
-
                     friends.Add(new Friend()
                     {
-                        Flag = Convert.ToInt64(item["flag"].ToString()),
+                        SmartQQBot = this,
+                        Face = Convert.ToInt64(item["face"].ToString()),
+                        Nickname = item["nick"].ToString(),
                         Uin = Convert.ToInt64(item["uin"].ToString()),
-                        GroupId = Convert.ToInt64(item["categories"].ToString())
                     });
+                    
+                }
+                foreach (var item in response["friends"] as JArray)
+                {
+                    Friend friend = friends.Where(p => p.Uin == Convert.ToInt64(item["uin"].ToString())).First();
+                    if (friend != null)
+                    {
+                        friend.Flag = Convert.ToInt64(item["flag"].ToString());
+                        friend.GroupId = Convert.ToInt64(item["categories"].ToString());
+                    }
+
                 }
                 ///好友备注信息
                 foreach (var item in response["marknames"] as JArray)
@@ -327,21 +362,7 @@ namespace SmartQQ
                         friend.IsVip = item["is_vip"].ToString().Equals("1");
                     }
                 }
-                ///好友info信息
-                foreach (var item in response["info"] as JArray)
-                {
-                    Friend friend = friends.Where(p => p.Uin == Convert.ToInt64(item["uin"].ToString())).First();
-                    if (friend != null)
-                    {
-                        friend.Face = Convert.ToInt32(item["face"].ToString());
-                        friend.Nickname = item["nick"].ToString();
-                    }
-                }
-                ///更新所有好友的详细信息
-                foreach (var item in friends)
-                {
-                    updateFriendInfo(item);
-                }
+                
 
                 cache.UpdateValueCache(SmartQQStaticString.Friends, friends, 1200);
                 cache.UpdateValueCache(SmartQQStaticString.FriendsGroup, friendGroups, 3000);
@@ -366,13 +387,15 @@ namespace SmartQQ
                 /// </summary>
                 List<Group> groups = new List<Group>();
                 Log.Write("开始获取群列表");
-
                 JToken response = client.PostJsonAsync(SmartQQAPI.GetGroupList,
                     new JObject { { "vfwebqq", vfwebqq }, { "hash", hash } })["result"];
-                Log.Write(response.ToString());
+                //Log.Write(response.ToString());
                 ///QQ群信息
                 groups.Clear();
-                foreach (var item in response["gnamelist"] as JArray)
+                JArray jArray = response["gnamelist"] as JArray;
+                float idx = 0;
+                float max = jArray.Count;
+                foreach (var item in jArray)
                 {
                     groups.Add(new Group()
                     {
@@ -381,8 +404,10 @@ namespace SmartQQ
                         Name = item["name"].ToString(),
                         Code = Convert.ToInt64(item["code"].ToString())
                     });
+                    Log.Progress(idx++ / max, "更新QQ群：");
                 }
                 cache.UpdateValueCache(SmartQQStaticString.Group, groups, 1000);
+                Log.Write("结束更新群!");
                 return true;
             }
             catch (Exception)
@@ -611,26 +636,31 @@ namespace SmartQQ
         /// </summary>
         /// <param name="friend">好友</param>
         /// <returns></returns>
-        private bool updateFriendInfo(Friend friend)
+        internal FriendInfo updateFriendInfo(Friend friend)
         {
             try
             {
-                JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
-                friend.FriendInfo = null;
-                friend.FriendInfo = jObject["result"].ToObject<FriendInfo>();
-                return true;
+                FriendInfo info = null;
+                info = cache.GetValueCache<FriendInfo>(friend.Id.ToString());
+                if (info == null)
+                {
+                    JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
+                    info = jObject["result"].ToObject<FriendInfo>();
+                    cache.UpdateValueCache(friend.Id.ToString(), info);
+                }
+                return info;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Log.Write("更新好友:", friend.Nickname, " ，详细信息失败!");
-                return false;
+                return null;
             }
         }
         /// <summary>
         /// 更新自己账户的信息
         /// </summary>
         /// <returns></returns>
-        private FriendInfo updateSelfAccountInfo()
+        internal FriendInfo updateSelfAccountInfo()
         {
             FriendInfo info = cache.GetValueCache<FriendInfo>(SmartQQStaticString.SelfInfo);
             if(info == null)
@@ -638,6 +668,64 @@ namespace SmartQQ
                 info = ((JObject)client.GetJsonAsync(SmartQQAPI.GetAccountInfo)["result"]).ToObject<FriendInfo>();
             }
             return info;
+        }
+        /// <summary>
+        /// 更新自己QQ群信息
+        /// </summary>
+        /// <param name="group">QQ群信息</param>
+        /// <returns></returns>
+        internal GroupInfo updateGroupInfo(Group group)
+        {
+            GroupInfo info = cache.GetValueCache<GroupInfo>(group.Code.ToString());
+            try
+            {
+                if (info == null)
+                {
+                    JObject result = ((JObject)client.GetJsonAsync(SmartQQAPI.GetGroupInfo, group.Code, vfwebqq)["result"]);
+
+                    info = result["ginfo"].ToObject<GroupInfo>();
+
+                    // 获得群成员信息
+                    var members = new Dictionary<long, GroupMemberInfo>();
+                    var minfo = (JArray)result["minfo"];
+                    for (var i = 0; minfo != null && i < minfo.Count; i++)
+                    {
+                        var member = minfo[i].ToObject<GroupMemberInfo>();
+                        members.Add(member.Uin, member);
+                        info.Members.Add(member);
+                    }
+                    var stats = (JArray)result["stats"];
+                    for (var i = 0; stats != null && i < stats.Count; i++)
+                    {
+                        var item = (JObject)stats[i];
+                        var member = members[item["uin"].Value<long>()];
+                        member.ClientType = item["client_type"].Value<int>();
+                        member.Status = item["stat"].Value<int>();
+                    }
+                    var cards = (JArray)result["cards"];
+                    for (var i = 0; cards != null && i < cards.Count; i++)
+                    {
+                        var item = (JObject)cards[i];
+                        members[item["muin"].Value<long>()].Alias = item["card"].Value<string>();
+                        if (item["muin"].Value<long>() == SelfInfo.Uin)
+                            info.MyAlias = item["card"].Value<string>();
+                    }
+                    var vipinfo = (JArray)result["vipinfo"];
+                    for (var i = 0; vipinfo != null && i < vipinfo.Count; i++)
+                    {
+                        var item = (JObject)vipinfo[i];
+                        var member = members[item["u"].Value<long>()];
+                        member.IsVip = item["is_vip"].Value<int>() == 1;
+                        member.VipLevel = item["vip_level"].Value<int>();
+                    }
+                }
+                return info;
+            }
+            catch (Exception)
+            {
+                Log.Write("拉取群的详细信息失败!");
+                return null;
+            }
         }
         /// <summary>
         /// 消息循环
@@ -668,10 +756,14 @@ namespace SmartQQ
                         case "message":
                             imessage = message["value"].ToObject<PrivateMessage>();
                             (imessage as PrivateMessage).SmartQQBot = this;
+                            //(imessage as PrivateMessage).Content = (message["value"]["content"] as JArray)[1].ToObject<string>();
+                            //(imessage as PrivateMessage).Font = (message["value"]["content"] as JArray)[0].ToObject<Font>();
                             break;
                         case "group_message":
                             imessage = message["value"].ToObject<GroupMessage>();
                             (imessage as GroupMessage).SmartQQBot = this;
+                            //(imessage as GroupMessage).Content = (message["value"]["content"] as JArray)[1].ToObject<string>();
+                            //(imessage as GroupMessage).Font = (message["value"]["content"] as JArray)[0].ToObject<Font>();
                             break;
                         case "discu_message":
                             Log.Write("收到暂时不做处理的讨论组消息!");

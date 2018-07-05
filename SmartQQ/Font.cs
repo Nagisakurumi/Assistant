@@ -10,7 +10,7 @@ namespace SmartQQ
     /// <summary>
     ///     字体。
     /// </summary>
-    internal class Font
+    public class Font
     {
         /// <summary>
         ///     默认字体。

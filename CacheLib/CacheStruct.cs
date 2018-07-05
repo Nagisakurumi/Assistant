@@ -62,7 +62,7 @@ namespace CacheLib
         /// <param name="cacheHourTimeOut">缓存超时小时(-1为不作为)</param>
         public CacheStruct(object obj, DateTime endTime, long cacheSecondTimeOut = 360, long cacheHourTimeOut = -1)
         {
-            this.CacheSecondTimeOut = cacheHourTimeOut;
+            this.CacheSecondTimeOut = cacheSecondTimeOut;
             this.CacheObject = obj;
             this.CacheHourTimeOut = cacheHourTimeOut;
             this.startTime = DateTime.Now;
