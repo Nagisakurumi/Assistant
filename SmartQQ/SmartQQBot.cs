@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using LogLib;
 using CacheLib;
+using System.Threading;
+using SmartQQ.Message;
 
 namespace SmartQQ
 {
@@ -81,6 +81,22 @@ namespace SmartQQ
         /// 缓存
         /// </summary>
         internal Cache cache = new Cache();
+        /// <summary>
+        /// 消息循环线程
+        /// </summary>
+        private Thread messageLoopThread = null;
+        /// <summary>
+        /// 派发消息线程
+        /// </summary>
+        private Thread messageDistribution = null;
+        /// <summary>
+        /// 用于线程阻塞公共资源
+        /// </summary>
+        private AutoResetEvent distributionThreadAre = new AutoResetEvent(false);
+        /// <summary>
+        /// 消息队列
+        /// </summary>
+        private Queue<IMessage> messages = new Queue<IMessage>();
         #endregion
         #region 访问器
         /// <summary>
@@ -117,6 +133,10 @@ namespace SmartQQ
         /// <param name="group"></param>
         /// <returns></returns>
         public GroupInfo this[Group group] => GetGroupInfo(group);
+        /// <summary>
+        /// 消息派发
+        /// </summary>
+        public Action<IMessage> MessageCallBack { get; set; }
         #endregion
         #region 公开方法
         /// <summary>
@@ -408,10 +428,84 @@ namespace SmartQQ
             }
             return groupInfo;
         }
-        
+        /// <summary>
+        /// 发送私有消息
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <param name="friend">好友信息</param>
+        /// <returns></returns>
         public bool SendPrivateMessage(string message, Friend friend)
         {
-            return true;
+            return SendMessage(Message.MessageType.PrivateMessage, friend.Uin, message);
+        }
+        /// <summary>
+        /// 发送私有消息
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <param name="nin">id</param>
+        /// <returns></returns>
+        public bool SendPrivateMessage(string message, long uin)
+        {
+            return SendMessage(Message.MessageType.PrivateMessage, uin, message);
+        }
+        /// <summary>
+        /// 发送群消息
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <param name="uin">群id</param>
+        /// <returns></returns>
+        public bool SendGroupMessage(string message, long uin)
+        {
+            return SendMessage(Message.MessageType.GroupMessage, uin, message);
+        }
+        /// <summary>
+        /// 发送给群消息
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public bool SendGroupMessage(string message, Group group)
+        {
+            return SendMessage(Message.MessageType.GroupMessage, group.Id, message);
+        }
+        /// <summary>
+        /// 启动消息循环系统
+        /// </summary>
+        public void StartMessageLoop()
+        {
+            if(messageLoopThread != null && messageLoopThread.IsAlive)
+            {
+                return;
+            }
+            if (messageDistribution != null && messageDistribution.IsAlive)
+            {
+                messageDistribution.Abort();
+                messageDistribution = null;
+            }
+            
+            messageLoopThread = new Thread(pollAllMessageLoop);
+            messageLoopThread.IsBackground = true;
+            messageLoopThread.Start();
+
+            messageDistribution = new Thread(distributionLoop);
+            messageDistribution.IsBackground = true;
+            messageDistribution.Start();
+        }
+        /// <summary>
+        /// 停止消息循环
+        /// </summary>
+        public void StopMessageLoop()
+        {
+            if(messageLoopThread != null && messageLoopThread.IsAlive)
+            {
+                messageLoopThread.Abort();
+            }
+            if (messageDistribution != null && messageDistribution.IsAlive)
+            {
+                messageDistribution.Abort();
+            }
+            messageLoopThread = null;
+            messageDistribution = null;
         }
         #endregion
         #region 私有方法
@@ -519,10 +613,18 @@ namespace SmartQQ
         /// <returns></returns>
         private bool updateFriendInfo(Friend friend)
         {
-            JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
-            friend.FriendInfo = null;
-            friend.FriendInfo = jObject["result"].ToObject<FriendInfo>();
-            return true;
+            try
+            {
+                JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
+                friend.FriendInfo = null;
+                friend.FriendInfo = jObject["result"].ToObject<FriendInfo>();
+                return true;
+            }
+            catch (Exception)
+            {
+                Log.Write("更新好友:", friend.Nickname, " ，详细信息失败!");
+                return false;
+            }
         }
         /// <summary>
         /// 更新自己账户的信息
@@ -542,36 +644,137 @@ namespace SmartQQ
         /// </summary>
         private void pollAllMessageLoop()
         {
+            var r = new JObject
+            {
+                {"ptwebqq", ptwebqq},
+                {"clientid", clientid},
+                {"psessionid", psessionid},
+                {"key", ""}
+            };
 
+            while (true)
+            {
+                var response = client.PostJsonAsync(SmartQQAPI.PollMessage, r);
+                JArray messageArray = response["result"] as JArray;
+
+                foreach (var item in messageArray)
+                {
+                    var message = (JObject)item;
+                    var type = message["poll_type"].Value<string>();
+
+                    IMessage imessage = null;
+                    switch (type)
+                    {
+                        case "message":
+                            imessage = message["value"].ToObject<PrivateMessage>();
+                            (imessage as PrivateMessage).SmartQQBot = this;
+                            break;
+                        case "group_message":
+                            imessage = message["value"].ToObject<GroupMessage>();
+                            (imessage as GroupMessage).SmartQQBot = this;
+                            break;
+                        case "discu_message":
+                            Log.Write("收到暂时不做处理的讨论组消息!");
+                            break;
+                        default:
+                            Log.Write("意外的消息类型：" + type);
+                            break;
+                    }
+                    if (imessage != null)
+                    {
+                        messages.Enqueue(imessage);
+                    }
+                }
+                if(messages.Count > 0)
+                {
+                    ///开启阻塞的线程
+                    distributionThreadAre.Set();
+                }
+                Thread.Sleep(300);
+            }
+
+        }
+        /// <summary>
+        /// 派发消息循环
+        /// </summary>
+        private void distributionLoop()
+        {
+            while (true)
+            {
+                ///如果没有消息则阻塞线程
+                if(messages.Count == 0)
+                {
+                    distributionThreadAre.WaitOne();
+                }
+                else
+                {
+                    IMessage message = messages.Dequeue();
+                    MessageCallBack?.Invoke(message);
+                    message = null;
+                }
+            }
         }
         /// <summary>
         /// 发送消息
         /// </summary>
-        /// <param name="url">请求的url</param>
         /// <param name="messageType">消息类型</param>
         /// <param name="id">消息发送方向的id</param>
         /// <param name="msg">消息内容</param>
         /// <returns></returns>
-        internal bool SendMessage(SmartQQAPI url, Message.MessageType messageType, long id, string msg)
+        internal bool SendMessage(Message.MessageType messageType, long id, string msg)
         {
-            var response = client.PostJsonAsync(url, new JObject
+            try
             {
-                {SmartQQStaticString.GetParamNameByMessageType(messageType), id},
+                SmartQQAPI url = null;
+                switch (messageType)
                 {
-                    "content",
-                    new JArray
-                        {
-                            SmartQQStaticString.TranslateEmoticons(msg),
-                            new JArray {"font", JObject.FromObject(Font.DefaultFont)}
-                        }
-                        .ToString(Formatting.None)
-                },
-                {"face", 573},
-                {"clientid", clientid},
-                {"msg_id", messageId++},
-                {"psessionid", psessionid}
-            }, RetryTimes);
+                    case Message.MessageType.PrivateMessage:
+                        url = SmartQQAPI.SendMessageToFriend;
+                        break;
+                    case Message.MessageType.GroupMessage:
+                        url = SmartQQAPI.SendMessageToGroup;
+                        break;
+                    case Message.MessageType.UnKnowMessage:
+                        Log.Write("未知的消息类型!");
+                        return false;
+                    default:
+                        Log.Write("未知的类型!");
+                        return false;
+                }   
+                var response = client.PostJsonAsync(url, new JObject
+                {
+                    {SmartQQStaticString.GetParamNameByMessageType(messageType), id},
+                    {
+                        "content",
+                        new JArray
+                            {
+                                SmartQQStaticString.TranslateEmoticons(msg),
+                                new JArray {"font", JObject.FromObject(Font.DefaultFont)}
+                            }
+                            .ToString(Formatting.None)
+                    },
+                    {"face", 573},
+                    {"clientid", clientid},
+                    {"msg_id", messageId++},
+                    {"psessionid", psessionid}
+                }, RetryTimes);
 
+                int? code = response["retcode"].ToObject<int?>();
+                if(code == 0)
+                {
+                    Log.Write("消息发送成功!");
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                Log.Write("发送信息失败!");
+                return false;
+            }
             return true;
         }
         #endregion

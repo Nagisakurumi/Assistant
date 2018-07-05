@@ -10,7 +10,7 @@ namespace SmartQQ
     /// <summary>
     /// QQ群
     /// </summary>
-    public class Group
+    public class Group : IMessageSource
     {
         /// <summary>
         ///     意义尚不明确。

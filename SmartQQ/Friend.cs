@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace SmartQQ
 {
-    public class Friend
+    public class Friend : IMessageSource
     {
+        /// <summary>
+        /// 消息来源的id
+        /// </summary>
+        public long Id { get => this.Uin; }
         /// <summary>
         /// 好友名称
         /// </summary>
@@ -65,8 +69,5 @@ namespace SmartQQ
         /// <inheritdoc />
         [JsonIgnore]
         public long QQNumber { get; internal set; }
-        /// <inheritdoc />
-        [JsonProperty("userId")]
-        public long Id { get; internal set; }
     }
 }

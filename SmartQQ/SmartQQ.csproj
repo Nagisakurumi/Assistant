@@ -58,6 +58,8 @@
     <Compile Include="Group.cs" />
     <Compile Include="GroupInfocs.cs" />
     <Compile Include="GroupMemberInfo.cs" />
+    <Compile Include="IMessageSource.cs" />
+    <Compile Include="Message\GroupMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\PrivateMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CacheLib
 {
+    /// <summary>
+    /// 缓存
+    /// </summary>
     public class Cache
     {
         /// <summary>
