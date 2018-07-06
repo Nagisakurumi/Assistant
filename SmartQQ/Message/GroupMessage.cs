@@ -22,7 +22,7 @@ namespace SmartQQ.Message
         /// 消息来源
         /// </summary>
         [JsonIgnore]
-        public IMessageSource MessageSource => SmartQQBot.Groups.Where(p => p.Id == SenderId).First();
+        public IMessageSource MessageSource => getSource();
         /// <summary>
         /// 消息内容
         /// </summary>
@@ -51,7 +51,7 @@ namespace SmartQQ.Message
         /// <summary>
         /// 发送者id
         /// </summary>
-        [JsonProperty("from_uin")]
+        [JsonProperty("send_uin")]
         public long SenderId { get; set; }
         /// <summary>
         /// 接受者id
@@ -87,6 +87,23 @@ namespace SmartQQ.Message
         /// </summary>
         public GroupMessage()
         {
+        }
+        /// <summary>
+        /// 获取消息源
+        /// </summary>
+        /// <returns></returns>
+        private IMessageSource getSource()
+        {
+            try
+            {
+                return SmartQQBot.Groups.Find(p => p.Id == this.GroupCode).GroupInfo.Members.Find(p => p.Uin == this.SenderId);
+            }
+            catch (Exception)
+            {
+                LogLib.Log.Write("获取群消息失败!");
+                return null;
+            }
+
         }
     }
 }

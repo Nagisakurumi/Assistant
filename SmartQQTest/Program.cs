@@ -58,8 +58,35 @@ namespace SmartQQTest
         /// <param name="message"></param>
         private static void MessageCallBack(IMessage message)
         {
-            FriendInfo friend = smartQQBot[message.SenderId];
-            Log.Write(message.MessageType, friend.Nickname,  "--->",  message.Content);
+            try
+            {
+                string name = "";
+                if (message.MessageType == MessageType.PrivateMessage)
+                {
+                    Friend friend = (message as PrivateMessage).MessageSource as Friend;
+                    if (friend != null)
+                    {
+                        name = friend.Nickname;
+                    }
+                    else
+                    {
+                        name = "null";
+                    }
+                }
+                else if (message.MessageType == MessageType.GroupMessage)
+                {
+                    SmartQQ.GroupMemberInfo group = (message as GroupMessage).MessageSource as SmartQQ.GroupMemberInfo;
+                    if (group != null)
+                    {
+                        name = group.Nickname;
+                    }
+                }
+                Log.Write(message.MessageType, name, "--->", message.Content);
+            }
+            catch (Exception)
+            {
+                Log.Write(message.MessageType, message.SenderId, "--->", message.Content);
+            }
         }
     }
 }

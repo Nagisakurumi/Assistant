@@ -181,7 +181,6 @@ namespace SmartQQ
             checkStartTime = DateTime.Now;
             return true;
         }
-
         /// <summary>
         /// 检测是否登录成功前的检测
         /// </summary>
@@ -382,14 +381,10 @@ namespace SmartQQ
         {
             try
             {   
-                /// <summary>
-                /// QQ群
-                /// </summary>
                 List<Group> groups = new List<Group>();
                 Log.Write("开始获取群列表");
                 JToken response = client.PostJsonAsync(SmartQQAPI.GetGroupList,
                     new JObject { { "vfwebqq", vfwebqq }, { "hash", hash } })["result"];
-                //Log.Write(response.ToString());
                 ///QQ群信息
                 groups.Clear();
                 JArray jArray = response["gnamelist"] as JArray;
@@ -399,6 +394,7 @@ namespace SmartQQ
                 {
                     groups.Add(new Group()
                     {
+                        SmartQQBot = this,
                         Flag = Convert.ToInt64(item["flag"].ToString()),
                         Id = Convert.ToInt64(item["gid"].ToString()),
                         Name = item["name"].ToString(),
@@ -406,7 +402,7 @@ namespace SmartQQ
                     });
                     Log.Progress(idx++ / max, "更新QQ群：");
                 }
-                cache.UpdateValueCache(SmartQQStaticString.Group, groups, 1000);
+                cache.UpdateValueCache(SmartQQStaticString.Group, groups, 2300);
                 Log.Write("结束更新群!");
                 return true;
             }
@@ -646,7 +642,7 @@ namespace SmartQQ
                 {
                     JObject jObject = client.GetJsonAsync(SmartQQAPI.GetFriendInfo, friend.Uin, vfwebqq, psessionid);
                     info = jObject["result"].ToObject<FriendInfo>();
-                    cache.UpdateValueCache(friend.Id.ToString(), info);
+                    cache.UpdateValueCache(friend.Id.ToString(), info, 1800);
                 }
                 return info;
             }
@@ -719,6 +715,7 @@ namespace SmartQQ
                         member.VipLevel = item["vip_level"].Value<int>();
                     }
                 }
+                cache.UpdateValueCache(group.Code.ToString(), info, 3600);
                 return info;
             }
             catch (Exception)
@@ -744,7 +741,8 @@ namespace SmartQQ
             {
                 var response = client.PostJsonAsync(SmartQQAPI.PollMessage, r);
                 JArray messageArray = response["result"] as JArray;
-
+                if (messageArray == null)
+                    continue;
                 foreach (var item in messageArray)
                 {
                     var message = (JObject)item;

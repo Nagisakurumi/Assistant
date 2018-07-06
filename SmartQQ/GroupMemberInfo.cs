@@ -10,7 +10,7 @@ namespace SmartQQ
     /// <summary>
     /// 群成员信息
     /// </summary>
-    public class GroupMemberInfo
+    public class GroupMemberInfo : IMessageSource
     {
         /// <summary>
         /// QQ号
@@ -79,5 +79,10 @@ namespace SmartQQ
         /// </summary>
         [JsonProperty("vipLevel")]
         public int VipLevel { get; set; }
+        /// <summary>
+        /// 信息员的id
+        /// </summary>
+        [JsonIgnore]
+        public long Id => this.Uin;
     }
 }
