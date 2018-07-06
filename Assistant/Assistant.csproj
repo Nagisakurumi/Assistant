@@ -31,6 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LogLib">
+      <HintPath>..\Libs\LogLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -45,11 +52,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleHelper.cs" />
+    <Compile Include="Plugs\Plugin.cs" />
+    <Compile Include="Plugs\PlugInfo.cs" />
+    <Compile Include="Plugs\PluginsManager.cs" />
+    <Compile Include="Plugs\PluginsURL.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CacheLib\CacheLib.csproj">
+      <Project>{4c99028f-168c-467a-bc60-c0c2e7384f0d}</Project>
+      <Name>CacheLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\InterfaceLib\InterfaceLib.csproj">
+      <Project>{fbf727c6-dc98-4041-a068-e16e72ed43a9}</Project>
+      <Name>InterfaceLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

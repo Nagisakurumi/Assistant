@@ -42,11 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MsgInterface\FileInterface.cs" />
-    <Compile Include="MsgInterface\MsgCallBackEvent.cs" />
-    <Compile Include="MsgInterface\MsgInterface.cs" />
-    <Compile Include="MsgInterface\PlugInterface.cs" />
-    <Compile Include="PlugsInterface\BaseInterface.cs" />
+    <Compile Include="MsgInterface\IFileInterface.cs" />
+    <Compile Include="MsgInterface\IMsgInterface.cs" />
+    <Compile Include="PlugsInterface\IPlugInfoInterface.cs" />
+    <Compile Include="PlugsInterface\AudioInterface\IAudioInterface.cs" />
+    <Compile Include="PlugsInterface\IPlugBaseInterface.cs" />
     <Compile Include="ServerInterface\Interface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

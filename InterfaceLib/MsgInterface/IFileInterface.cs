@@ -10,7 +10,7 @@ namespace InterfaceLib.MsgInterface
     /// <summary>
     /// 文件消息接口
     /// </summary>
-    public interface FileInterface
+    public interface IFileInterface
     {
         /// <summary>
         /// 文件的地址

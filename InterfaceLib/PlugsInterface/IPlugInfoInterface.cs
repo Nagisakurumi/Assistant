@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterfaceLib.MsgInterface
+namespace InterfaceLib.PlugsInterface
 {
     /// <summary>
     /// 插件接口
     /// </summary>
-    public interface PlugInterface
+    public interface IPlugInfoInterface
     {
         /// <summary>
         /// 是否已经安装过的插件

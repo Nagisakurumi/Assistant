@@ -10,7 +10,7 @@ namespace InterfaceLib.MsgInterface
     /// <summary>
     /// 消息接口
     /// </summary>
-    public interface MsgInterface
+    public interface IMsgInterface
     {
         /// <summary>
         /// 文本消息
@@ -19,6 +19,6 @@ namespace InterfaceLib.MsgInterface
         /// <summary>
         /// 文件消息
         /// </summary>
-        Dictionary<string, FileInterface> FileInfos { get; }
+        Dictionary<string, IFileInterface> FileInfos { get; }
     }
 }
