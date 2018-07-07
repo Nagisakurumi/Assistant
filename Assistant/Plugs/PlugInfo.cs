@@ -27,5 +27,23 @@ namespace Assistant.Plugs
         public DateTime DateTime { get; set; }
 
         public string Version { get; set; }
+        /// <summary>
+        /// 克隆
+        /// </summary>
+        /// <returns></returns>
+        public PlugInfo Clone()
+        {
+            return new PlugInfo()
+            {
+                IsInstall = this.IsInstall,
+                Author = this.Author,
+                DateTime = this.DateTime,
+                LocalURL = this.LocalURL,
+                Name = this.Name,
+                RemoteURL = this.RemoteURL,
+                Size = this.Size,
+                Version = this.Version,
+            };
+        }
     }
 }

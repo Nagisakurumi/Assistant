@@ -9,67 +9,53 @@ namespace Audio
     /// </summary>
     internal static class LoadResourceDll
     {
-        static Dictionary<string, Assembly> Dlls = new Dictionary<string, Assembly>();
-        static Dictionary<string, object> Assemblies = new Dictionary<string, object>();
 
-        internal static Assembly AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            //程序集
-            Assembly ass;
-            //获取加载失败的程序集的全名
-            var assName = new AssemblyName(args.Name).FullName;
-            //判断Dlls集合中是否有已加载的同名程序集
-            if (Dlls.TryGetValue(assName, out ass) && ass != null)
-            {
-                Dlls[assName] = null;//如果有则置空并返回
-                return ass;
-            }
-            else
-            {
-                throw new DllNotFoundException(assName);//否则抛出加载失败的异常
-            }
-        }
-
-        /// <summary> 注册资源中的dll
+        /// <summary>
+        /// 所有依赖的dll集合
+        /// </summary>
+        private static Dictionary<string, Assembly> refAssembly = new Dictionary<string, Assembly>();
+        /// <summary>
+        /// 注册资源中的dll
         /// </summary>
         public static void RegistDLL()
         {
             //获取调用者的程序集
-            var ass = new StackTrace(0).GetFrame(1).GetMethod().Module.Assembly;
-            //判断程序集是否已经处理
-            if (Assemblies.ContainsKey(ass.FullName))
+            Assembly assembly = new StackTrace(0).GetFrame(1).GetMethod().Module.Assembly;
+            System.Resources.ResourceManager resourceManager = new System.Resources.ResourceManager(
+                assembly.GetName().Name + ".Properties.Resources", assembly);
+            AssemblyName [] refAssemblies = assembly.GetReferencedAssemblies();
+            foreach (var item in refAssemblies)
             {
-                return;
-            }
-            //程序集加入已处理集合
-            Assemblies.Add(ass.FullName, null);
-            //绑定程序集加载失败事件(这里我测试了,就算重复绑也是没关系的)
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
-            //获取所有资源文件文件名
-            var res = ass.GetManifestResourceNames();
-            foreach (var r in res)
-            {
-                //如果是dll,则加载
-                if (r.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                if (!refAssembly.ContainsKey(item.Name))
                 {
-                    try
+                    object ass = resourceManager.GetObject(item.Name.Replace('.', '_'));
+                    if (ass != null)
                     {
-                        var s = ass.GetManifestResourceStream(r);
-                        var bts = new byte[s.Length];
-                        s.Read(bts, 0, (int)s.Length);
-                        var da = Assembly.Load(bts);
-                        //判断是否已经加载
-                        if (Dlls.ContainsKey(da.FullName))
-                        {
-                            continue;
-                        }
-                        Dlls[da.FullName] = da;
-                    }
-                    catch
-                    {
-                        //加载失败就算了...
+                        //(ass as Assembly).load
+                        refAssembly.Add(item.Name, Assembly.Load(ass as byte[]));
                     }
                 }
+            }
+        }
+        /// <summary>
+        /// dll引用异常回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            string name = args.Name.Split(',')[0];
+            if (refAssembly.ContainsKey(name))
+            {
+                Assembly assembly = refAssembly[name];
+                refAssembly.Remove(name);
+                name = null;
+                return assembly;
+            }
+            else
+            {
+                throw new Exception(args.Name + "在资源文件中找不到!");
             }
         }
     }

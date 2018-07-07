@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InterfaceLib;
 using InterfaceLib.PlugsInterface;
 using InterfaceLib.PlugsInterface.AudioInterface;
 
@@ -11,6 +12,7 @@ namespace Audio
     /// <summary>
     /// 插件接口
     /// </summary>
+    [Export]
     public class Interface : IAudioInterface
     {
         /// <summary>
@@ -19,12 +21,12 @@ namespace Audio
         public Interface()
         {
             ///加载资源dll
-            AppDomain.CurrentDomain.AssemblyResolve += LoadResourceDll.AssemblyResolve;
+            //AppDomain.CurrentDomain.AssemblyResolve += LoadResourceDll.AssemblyResolve;
         }
         /// <summary>
         /// 实例
         /// </summary>
-        private Audio audio => Audio.Instacne;
+        private NAudio audio => NAudio.Instacne;
         /// <summary>
         /// 录音的数据
         /// </summary>
@@ -36,7 +38,7 @@ namespace Audio
         /// <summary>
         /// 日志写入
         /// </summary>
-        public Action<string> LogWrite { get => null; set { } }
+        public Action<string> LogWrite { get; set; }
 
         /// <summary>
         /// 播放音频
@@ -87,5 +89,7 @@ namespace Audio
         {
             return true;
         }
+
+       
     }
 }

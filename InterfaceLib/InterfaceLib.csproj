@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InterfaceAttribute.cs" />
     <Compile Include="MsgInterface\IFileInterface.cs" />
     <Compile Include="MsgInterface\IMsgInterface.cs" />
     <Compile Include="PlugsInterface\IPlugInfoInterface.cs" />

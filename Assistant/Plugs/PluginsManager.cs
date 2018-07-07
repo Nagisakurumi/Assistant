@@ -1,4 +1,5 @@
 ﻿using CacheLib;
+using InterfaceLib;
 using InterfaceLib.PlugsInterface;
 using LogLib;
 using System;
@@ -30,6 +31,30 @@ namespace Assistant.Plugs
         /// </summary>
         public List<IPlugInfoInterface> AudioPlugInfos => updateToMemory(PluginsURL.AudioPlugsSharp, getPlugInfoInterfaces);
         /// <summary>
+        /// 插件集合
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <returns></returns>
+        public KeyValuePair<string, Plugin> this[int idx]
+        {
+            get
+            {
+                int i = 0;
+                foreach (var item in PluginsContainer)
+                {
+                    if(i++ == idx)
+                    {
+                        return item;
+                    }
+                }
+                throw new Exception("idx的值不存在!");
+            }
+        }
+        /// <summary>
+        /// 插件数量
+        /// </summary>
+        public int Length => PluginsContainer.Count;
+        /// <summary>
         /// 加载插件
         /// </summary>
         /// <param name="path"></param>
@@ -45,8 +70,10 @@ namespace Assistant.Plugs
             {
                 Assembly assembly = Assembly.LoadFrom(path);
                 Plugin plugin = new Plugin();
-                plugin.PluginInstance = Activator.CreateInstance(assembly.GetExportedTypes().Where(p => p.Name.Equals(PluginsURL.PlugInterfaceClassName)).First()) as IPlugBaseInterface;
-                if(plugin is null)
+                plugin.PluginInstance = Activator.CreateInstance(
+                    assembly.GetExportedTypes().Where(p => p.GetCustomAttribute<ExportAttribute>() != null).First()
+                ) as IPlugBaseInterface;
+                if (plugin is null)
                 {
                     Log.Write("加载插件", name, "失败, 原因 --> ", "插件未提供有效的接口!");
                     return;
@@ -76,7 +103,50 @@ namespace Assistant.Plugs
             }
             catch (Exception ex)
             {
-                Log.Write("加载插件", name, "失败, 原因 --> ", ex.Message);
+                Log.Write("加载插件", name, "失败, 原因 --> ", ex.Message, "或者导出插件接口没有添加特性ExportAttribute");
+            }
+        }
+        /// <summary>
+        /// 加载插件
+        /// </summary>
+        /// <param name="info">插件信息</param>
+        private void loadCSharpPlugin(PlugInfo info)
+        {
+            string name = Path.GetFileName(info.LocalURL);
+            if (!File.Exists(info.LocalURL))
+            {
+                Log.Write("加载插件", name, "失败, 原因 --> ", "插件路劲下不存在该插件!");
+                return;
+            }
+            try
+            {
+                Assembly assembly = Assembly.LoadFrom(info.LocalURL);
+                Plugin plugin = new Plugin();
+                plugin.PluginInstance = Activator.CreateInstance(
+                    assembly.GetExportedTypes().Where(p=>p.GetCustomAttribute<ExportAttribute>() != null).First()
+                ) as IPlugBaseInterface;
+                if (plugin is null)
+                {
+                    Log.Write("加载插件", name, "失败, 原因 --> ", "插件未提供有效的接口!");
+                    return;
+                }
+                PlugInfo plugInfo = info.Clone();
+                plugInfo.Name = plugin.PluginInstance.Name;
+                plugin.PlugInfo = plugInfo;
+                string id = EncryptWithMD5(name);
+                if (!PluginsContainer.ContainsKey(id))
+                {
+                    PluginsContainer.Add(id, plugin);
+                }
+                else
+                {
+                    Log.Write("加载插件", name, "失败, 原因 --> 插件已经加载，重复加载!");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("加载插件", name, "失败, 原因 --> ", ex.Message, "或者导出插件接口没有添加特性ExportAttribute");
             }
         }
         /// <summary>
@@ -126,9 +196,21 @@ namespace Assistant.Plugs
                 string[] fileNames = Directory.GetFiles(directorysitem);
                 foreach (var item in fileNames)
                 {
-                    if (!Path.GetFileName(item).Contains(".dll") || !Path.GetFileName(item).Contains(PluginsURL.PlugNameStartContainer)
-                        || Path.GetFileName(item).IndexOf(PluginsURL.PlugNameStartContainer) != 0)
+                    //if (!Path.GetFileName(item).Contains(".dll") || !Path.GetFileName(item).Contains(PluginsURL.PlugNameStartContainer)
+                    //    || Path.GetFileName(item).IndexOf(PluginsURL.PlugNameStartContainer) != 0)
+                    //    continue;
+                    try
+                    {
+                        if(Assembly.LoadFrom(item).GetExportedTypes().Where(p=>
+                        p.GetCustomAttribute<ExportAttribute>() != null).First() == null)
+                        {
+                            continue;
+                        }
+                    }
+                    catch (Exception)
+                    {
                         continue;
+                    }
 
                     FileInfo info = new FileInfo(item);
                     PlugInfo plugInfo = new PlugInfo();
@@ -144,6 +226,16 @@ namespace Assistant.Plugs
                 }
             }
             return plugs;
+        }
+        /// <summary>
+        /// 加载插件
+        /// </summary>
+        public void LoadPlugins()
+        {
+            foreach (var item in AudioPlugInfos)
+            {
+                loadCSharpPlugin(item as PlugInfo);
+            }
         }
     }
 }
