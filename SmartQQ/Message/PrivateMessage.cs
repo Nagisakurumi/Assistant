@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static LogLib.LogInfo;
 
 namespace SmartQQ.Message
 {
@@ -68,7 +69,7 @@ namespace SmartQQ.Message
         /// <param name="message"></param>
         public void Reply(string message)
         {
-            LogLib.Log.Write("发送私有信息->", message);
+            Log.Write("发送私有信息->", message);
             SmartQQBot.SendPrivateMessage(message, this.MessageSource.Id);
         }
         /// <summary>

@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterfaceLib.MsgInterface
+namespace InterfaceLib.MsgInterface.MsgInfo
 {
     /// <summary>
     /// 文件消息接口
     /// </summary>
-    public interface IFileInterface
+    public interface IFileInfo : IInfoBase
     {
         /// <summary>
         /// 文件的地址

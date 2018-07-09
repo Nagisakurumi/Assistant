@@ -43,12 +43,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InterfaceAttribute.cs" />
-    <Compile Include="MsgInterface\IFileInterface.cs" />
+    <Compile Include="PlugsInterface\CurrencyInterface\ICurrencyInterface.cs" />
     <Compile Include="MsgInterface\IMsgInterface.cs" />
+    <Compile Include="MsgInterface\MsgInfo\Enums\CommandType.cs" />
+    <Compile Include="MsgInterface\MsgInfo\IFileInfo.cs" />
+    <Compile Include="MsgInterface\MsgInfo\IInfoBase.cs" />
+    <Compile Include="MsgInterface\MsgInfo\ITextInfo.cs" />
     <Compile Include="PlugsInterface\IPlugInfoInterface.cs" />
     <Compile Include="PlugsInterface\AudioInterface\IAudioInterface.cs" />
     <Compile Include="PlugsInterface\IPlugBaseInterface.cs" />
-    <Compile Include="ServerInterface\Interface.cs" />
+    <Compile Include="ServerInterface\IServerInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

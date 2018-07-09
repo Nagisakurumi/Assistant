@@ -24,5 +24,9 @@ namespace Assistant.Plugs
         /// 音频交互的插件路径
         /// </summary>
         public static string AudioPlugsSharp => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugs/Audio/CSharp/");
+        /// <summary>
+        /// 通常插件路径
+        /// </summary>
+        public static string CurrencyPlugsSharp => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugs/Currency/CSharp/");
     }
 }

@@ -10,6 +10,7 @@ using LogLib;
 using CacheLib;
 using System.Threading;
 using SmartQQ.Message;
+using static SmartQQ.SmartQQLog;
 
 namespace SmartQQ
 {

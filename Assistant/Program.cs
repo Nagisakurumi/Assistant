@@ -10,33 +10,27 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.IO;
+using static Assistant.Plugs.PluginsManager;
 
 namespace Assistant
 {
     class Program
     {
         /// <summary>
-        /// 插件管理器
-        /// </summary>
-        public static PluginsManager PluginsManager = new PluginsManager();
-
-
-        /// <summary>
         /// 主函数
         /// </summary>
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            List<IPlugInfoInterface> audioInterfaces = PluginsManager.AudioPlugInfos;
+            List<IPlugInfoInterface> audioInterfaces = Manager.AudioPlugInfos;
             Console.WriteLine("插件列表!");
             foreach (var item in audioInterfaces)
             {
                 WriteObjectToJson(item);
             }
             ///加载插件
-            PluginsManager.LoadPlugins();
-            IAudioInterface plugin = PluginsManager[0].Value.PluginInstance as IAudioInterface;
-            plugin.LogWrite += WriteLog;
+            Manager.LoadPlugins();
+            IAudioInterface plugin = Manager[0].Value.PluginInstance as IAudioInterface;
             plugin.Init();
             Console.Write("完成插件" + plugin.Name + "加载!");
             //using (FileStream fileStream = File.Open("wav.wav", FileMode.Create))
@@ -45,15 +39,15 @@ namespace Assistant
             //    fileStream.Write(datas, 0, datas.Length);
             //}
             //plugin.Play("wav.wav");
-            //plugin.Play(plugin.StartBySecondTime(2));
+            plugin.Play(plugin.StartBySecondTime(8));
             //using (FileStream stream = File.Open(@"C:\Users\78633\Desktop\baiduai\test.wav", FileMode.Open))
             //{
             //    byte[] datas = new byte[stream.Length];
             //    stream.Read(datas, 0, datas.Length);
             //    plugin.Play(datas);
-                
+
             //}
-            plugin.Play(@"C:\Users\78633\Desktop\baiduai\test.wav");
+            //plugin.Play(@"C:\Users\78633\Desktop\baiduai\test.wav");
             Console.ReadKey();
         }
 

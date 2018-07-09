@@ -12,6 +12,10 @@ namespace InterfaceLib.PlugsInterface
     public interface IPlugInfoInterface
     {
         /// <summary>
+        /// 插件的id
+        /// </summary>
+        string Id { get; }
+        /// <summary>
         /// 是否已经安装过的插件
         /// </summary>
         bool IsInstall { get; }

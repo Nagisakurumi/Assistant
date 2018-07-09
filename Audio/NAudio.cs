@@ -22,14 +22,19 @@ namespace Audio
         /// 麦克风采集器
         /// </summary>
         private WaveInEvent waveIn = null;
-
+        /// <summary>
+        /// 频率
+        /// </summary>
+        public int SimapleRate { get; set; } = 16000;
+        /// <summary>
+        /// 声道数
+        /// </summary>
+        public int Channel { get; set; } = 1;
         //public static string FilePath = 
         /// <summary>
         /// 播放组件
         /// </summary>
         private IWavePlayer audioPlayer = new WaveOut();
-
-        //private WaveBuffer waveStream = new ();
         /// <summary>
         /// 实例
         /// </summary>
@@ -51,6 +56,7 @@ namespace Audio
         /// 采集的数据
         /// </summary>
         private List<byte> datas = new List<byte>();
+
         /// <summary>
         /// 用于线程阻塞公共资源
         /// </summary>
@@ -64,7 +70,7 @@ namespace Audio
         /// </summary>
         public void Start()
         {
-            waveIn = new WaveInEvent() { WaveFormat = new WaveFormat(16000, 1) };
+            waveIn = new WaveInEvent() { WaveFormat = new WaveFormat(SimapleRate, Channel) };
             waveIn.DataAvailable += waveIn_DataAvailable;
             waveIn.RecordingStopped += OnRecordingStopped;
             waveIn.StartRecording();
@@ -134,11 +140,13 @@ namespace Audio
         /// <param name="playDatas">数据源</param>
         public void Play(byte[] playDatas)
         {
-            WaveBuffer waveBuffer = new WaveBuffer(playDatas);
-            BufferedWaveProvider bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat());
-            bufferedWaveProvider.AddSamples(waveBuffer, 0, waveBuffer.ByteBufferCount);
+            BufferedWaveProvider bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(SimapleRate, Channel));
+            bufferedWaveProvider.BufferLength = playDatas.Length;
+            bufferedWaveProvider.AddSamples(playDatas, 0, playDatas.Length);
             audioPlayer.Init(bufferedWaveProvider);
             audioPlayer.Play();
+            //bufferedWaveProvider.ClearBuffer();
+            //bufferedWaveProvider = null;
         }
         /// <summary>
         /// 播放wav文件
@@ -150,8 +158,11 @@ namespace Audio
             {
                 return;
             }
-            audioPlayer.Init(new AudioFileReader(wavPath));
+            AudioFileReader audioFileReader = new AudioFileReader(wavPath);
+            audioPlayer.Init(audioFileReader);
             this.audioPlayer.Play();
+            //audioFileReader.Dispose();
+            //audioFileReader = null;
         }
     }
 }

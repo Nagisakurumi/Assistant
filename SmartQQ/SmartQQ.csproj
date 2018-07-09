@@ -58,6 +58,9 @@
     <Compile Include="GroupInfocs.cs" />
     <Compile Include="GroupMemberInfo.cs" />
     <Compile Include="IMessageSource.cs" />
+    <Compile Include="Interface.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="MessageInterface.cs" />
     <Compile Include="Message\GroupMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\PrivateMessage.cs" />
@@ -70,6 +73,10 @@
     <ProjectReference Include="..\CacheLib\CacheLib.csproj">
       <Project>{4c99028f-168c-467a-bc60-c0c2e7384f0d}</Project>
       <Name>CacheLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\InterfaceLib\InterfaceLib.csproj">
+      <Project>{fbf727c6-dc98-4041-a068-e16e72ed43a9}</Project>
+      <Name>InterfaceLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

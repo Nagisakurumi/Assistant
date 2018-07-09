@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static LogLib.LogInfo;
 
 namespace SmartQQ.Message
 {
@@ -79,7 +80,7 @@ namespace SmartQQ.Message
         /// <param name="message"></param>
         public void Reply(string message)
         {
-            LogLib.Log.Write("发送群信息->", message);
+            Log.Write("发送群信息->", message);
             SmartQQBot.SendGroupMessage(message, this.MessageSource.Id);
         }
         /// <summary>
@@ -100,7 +101,7 @@ namespace SmartQQ.Message
             }
             catch (Exception)
             {
-                LogLib.Log.Write("获取群消息失败!");
+                Log.Write("获取群消息失败!");
                 return null;
             }
 

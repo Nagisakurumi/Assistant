@@ -12,6 +12,9 @@ namespace Assistant.Plugs
     /// </summary>
     public class PlugInfo : IPlugInfoInterface
     {
+
+        public string Id { get; set; }
+
         public bool IsInstall { get; set; }
 
         public string RemoteURL { get; set; }

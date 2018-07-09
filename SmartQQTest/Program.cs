@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using SmartQQ;
 using System.Drawing;
 using SmartQQ.Message;
-using LogLib;
+using static SmartQQ.SmartQQLog;
 
 namespace SmartQQTest
 {
@@ -18,7 +18,7 @@ namespace SmartQQTest
         static SmartQQBot smartQQBot = new SmartQQBot();
         static void Main(string[] args)
         {
-            LogLib.Log.ErroStringEvent += Log_ErroStringEvent;
+            Log.ErroStringEvent += Log_ErroStringEvent;
             
             smartQQBot.GetLoginParamter();
             Thread.Sleep(20);

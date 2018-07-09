@@ -30,18 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ESBasic">
-      <HintPath>Lib\ESBasic.dll</HintPath>
-    </Reference>
     <Reference Include="NAudio, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="Oraycn.MCapture">
-      <HintPath>Lib\Oraycn.MCapture.dll</HintPath>
-    </Reference>
-    <Reference Include="Oraycn.MPlayer">
-      <HintPath>Lib\Oraycn.MPlayer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,7 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Audio.cs" />
     <Compile Include="CaputreMode.cs" />
     <Compile Include="Interface.cs" />
     <Compile Include="LoadDll.cs" />

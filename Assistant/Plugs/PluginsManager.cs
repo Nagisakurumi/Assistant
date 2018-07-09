@@ -1,6 +1,8 @@
 ﻿using CacheLib;
 using InterfaceLib;
 using InterfaceLib.PlugsInterface;
+using InterfaceLib.PlugsInterface.CurrencyInterface;
+using InterfaceLib.ServerInterface;
 using LogLib;
 using System;
 using System.Collections.Generic;
@@ -10,13 +12,14 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static LogLib.LogInfo;
 
 namespace Assistant.Plugs
 {
     /// <summary>
     /// 插件管理容器
     /// </summary>
-    public class PluginsManager
+    partial class PluginsManager
     {
         /// <summary>
         /// 插件容器
@@ -27,9 +30,29 @@ namespace Assistant.Plugs
         /// </summary>
         private Cache Cache = new Cache();
         /// <summary>
+        /// 所有插件信息
+        /// </summary>
+        public IPlugInfoInterface [] PlugInfoInterfaces
+        {
+            get
+            {
+                IPlugInfoInterface[] plugInfoInterfaces = new IPlugInfoInterface[PlugInfoInterfaces.Count()];
+                int idx = 0;
+                foreach (var item in PluginsContainer)
+                {
+                    plugInfoInterfaces[idx++] = item.Value.PlugInfo;
+                }
+                return plugInfoInterfaces;
+            }
+        }
+        /// <summary>
         /// 获取音频插件列表
         /// </summary>
         public List<IPlugInfoInterface> AudioPlugInfos => updateToMemory(PluginsURL.AudioPlugsSharp, getPlugInfoInterfaces);
+        /// <summary>
+        /// 通用插件列表
+        /// </summary>
+        public List<IPlugInfoInterface> CurrencyPlugInfos => updateToMemory(PluginsURL.CurrencyPlugsSharp, getPlugInfoInterfaces);
         /// <summary>
         /// 插件集合
         /// </summary>
@@ -54,6 +77,14 @@ namespace Assistant.Plugs
         /// 插件数量
         /// </summary>
         public int Length => PluginsContainer.Count;
+        /// <summary>
+        /// 插件管理器
+        /// </summary>
+        public static PluginsManager Manager = new PluginsManager();
+        /// <summary>
+        /// 单例构造函数
+        /// </summary>
+        private PluginsManager() { }
         /// <summary>
         /// 加载插件
         /// </summary>
@@ -154,7 +185,7 @@ namespace Assistant.Plugs
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        private static string EncryptWithMD5(string source)
+        public static string EncryptWithMD5(string source)
         {
             byte[] sor = Encoding.UTF8.GetBytes(source);
             MD5 md5 = MD5.Create();

@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using static SmartQQ.SmartQQLog;
 
 namespace SmartQQ
 {

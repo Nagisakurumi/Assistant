@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InterfaceLib;
+using InterfaceLib.MsgInterface;
 using InterfaceLib.PlugsInterface;
 using InterfaceLib.PlugsInterface.AudioInterface;
+using InterfaceLib.ServerInterface;
 
 namespace Audio
 {
@@ -36,9 +38,17 @@ namespace Audio
         /// </summary>
         public string Name => "Audio";
         /// <summary>
-        /// 日志写入
+        /// 频率
         /// </summary>
-        public Action<string> LogWrite { get; set; }
+        public int SimapleRate { get => audio.SimapleRate;
+            set => audio.SimapleRate = value;
+        }
+        /// <summary>
+        /// 声道数
+        /// </summary>
+        public int Channel { get => audio.Channel;
+            set => audio.Channel = value;
+        }
 
         /// <summary>
         /// 播放音频
@@ -69,7 +79,7 @@ namespace Audio
         /// 启动插件
         /// </summary>
         /// <returns></returns>
-        public bool Start()
+        public bool Start(IServerInterface serverInterface)
         {
             return true;
         }
@@ -90,6 +100,12 @@ namespace Audio
             return true;
         }
 
-       
+        /// <summary>
+        /// 接受服务的消息
+        /// </summary>
+        /// <param name="msgInterface"></param>
+        public void ReciverFromServerMsg(IMsgInterface msgInterface)
+        {
+        }
     }
 }

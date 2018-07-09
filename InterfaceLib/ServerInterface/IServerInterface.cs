@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace InterfaceLib.ServerInterface
 {
     /// <summary>
-    /// 界面插件接口
+    /// 服务接口
     /// </summary>
-    public interface Interface : IPlugBaseInterface
+    public interface IServerInterface
     {
         /// <summary>
         /// 获取远程仓库插件列表
@@ -48,10 +48,19 @@ namespace InterfaceLib.ServerInterface
         /// <returns></returns>
         bool StopLocalPlug(IPlugInfoInterface plugInterface);
         /// <summary>
-        /// 设置消息回调函数
+        /// 向服务写入日志
         /// </summary>
-        /// <param name="msgCallBackEventHandler"></param>
-        /// <returns></returns>
-        bool SetMsgCallBackFunction(Action<IMsgInterface> msgCallBackEventHandler);
+        /// <param name="logMsg">日志内容</param>
+        void WriteLog(string logMsg);
+        /// <summary>
+        /// 写入内容到显示插件上显示
+        /// </summary>
+        /// <param name="msg"></param>
+        void SendMsgToDispla(string msg);
+        /// <summary>
+        /// 发送消息到服务
+        /// </summary>
+        /// <param name="msgInterface">消息</param>
+        void SendToMessage(IMsgInterface msgInterface);
     }
 }

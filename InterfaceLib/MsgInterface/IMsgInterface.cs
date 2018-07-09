@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InterfaceLib.MsgInterface.MsgInfo;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,12 +14,15 @@ namespace InterfaceLib.MsgInterface
     public interface IMsgInterface
     {
         /// <summary>
-        /// 文本消息
-        /// </summary>
-        Dictionary<string, string> TextMsg { get; }
-        /// <summary>
         /// 文件消息
         /// </summary>
-        Dictionary<string, IFileInterface> FileInfos { get; }
+        Dictionary<string, IInfoBase> MsgInfos { get; }
+        /// <summary>
+        /// 添加一条消息
+        /// </summary>
+        /// <param name="infoBase"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool AddMessage(IInfoBase infoBase, string key = null);
     }
 }

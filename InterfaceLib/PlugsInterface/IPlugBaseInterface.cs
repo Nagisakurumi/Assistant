@@ -1,4 +1,6 @@
-﻿using System;
+﻿using InterfaceLib.MsgInterface;
+using InterfaceLib.ServerInterface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,10 +17,7 @@ namespace InterfaceLib.PlugsInterface
         /// 插件的名称
         /// </summary>
         string Name { get; }
-        /// <summary>
-        /// 日志写入回调
-        /// </summary>
-        Action<string> LogWrite { get; set; }
+
         ///// <summary>
         ///// 插件的作者
         ///// </summary>
@@ -34,13 +33,19 @@ namespace InterfaceLib.PlugsInterface
         /// <summary>
         /// 启动插件
         /// </summary>
+        /// <param name="serverInterface">服务对象</param>
         /// <returns></returns>
-        bool Start();
+        bool Start(IServerInterface serverInterface);
         /// <summary>
         /// 终止插件
         /// </summary>
         /// <returns></returns>
         bool Stop();
+        /// <summary>
+        /// 服务给插件路由消息
+        /// </summary>
+        /// <param name="msgInterface"></param>
+        void ReciverFromServerMsg(IMsgInterface msgInterface);
         /// <summary>
         /// 初始化插件
         /// </summary>

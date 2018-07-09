@@ -15,6 +15,14 @@ namespace InterfaceLib.PlugsInterface.AudioInterface
         /// </summary>
         byte[] Datas { get; }
         /// <summary>
+        /// 采用率
+        /// </summary>
+        int SimapleRate { get; set; }
+        /// <summary>
+        /// 声道数
+        /// </summary>
+        int Channel { get; set; }
+        /// <summary>
         /// 播放音频
         /// </summary>
         /// <param name="audioDatas">数据源</param>
