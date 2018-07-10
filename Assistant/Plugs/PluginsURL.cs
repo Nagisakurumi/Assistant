@@ -13,9 +13,13 @@ namespace Assistant.Plugs
     public static class PluginsURL
     {
         /// <summary>
-        /// 所有插件的名称起始
+        /// 界面id
         /// </summary>
-        public static string PlugNameStartContainer => "Interface_";
+        public static string FaceInterfaceId = "1";
+        /// <summary>
+        /// 服务的id
+        /// </summary>
+        public static string ServerInterfaceId = "0";
         /// <summary>
         /// 所有插件公开交互类的类型名称
         /// </summary>
@@ -28,5 +32,9 @@ namespace Assistant.Plugs
         /// 通常插件路径
         /// </summary>
         public static string CurrencyPlugsSharp => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugs/Currency/CSharp/");
+        /// <summary>
+        /// 界面插件
+        /// </summary>
+        public static string FacePlugsSharp => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugs/Face/CSharp/");
     }
 }

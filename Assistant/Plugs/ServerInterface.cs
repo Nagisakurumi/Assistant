@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Assistant.Plugs.PluginsManager;
+using static Assistant.MessageRoute.MessageRoute;
+using Assistant.MessageRoute;
+using static Assistant.ServerLog;
 
 namespace Assistant.Plugs
 {
@@ -15,6 +18,25 @@ namespace Assistant.Plugs
     /// </summary>
     partial class ServerInterface : IServerInterface
     {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        private ServerInterface() {
+            Log.ErroStringEvent += Log_ErroStringEvent;
+        }
+        /// <summary>
+        /// 日志写入回调
+        /// </summary>
+        /// <param name="obj"></param>
+        private void Log_ErroStringEvent(string obj)
+        {
+            Server.WriteLog(obj);
+        }
+
+        /// <summary>
+        /// 服务
+        /// </summary>
+        public readonly static ServerInterface Server = new ServerInterface();
         /// <summary>
         /// 获取本地已经安装的插件列表
         /// </summary>
@@ -57,7 +79,7 @@ namespace Assistant.Plugs
         /// <param name="msg"></param>
         public void SendMsgToDispla(string msg)
         {
-            
+            MessageRouteInfo.AddMessage(new TextMsgInfo() { Text = msg, ReciverId = PluginsURL.FaceInterfaceId });
         }
         /// <summary>
         /// 路由消息
@@ -65,7 +87,7 @@ namespace Assistant.Plugs
         /// <param name="msgInterface"></param>
         public void SendToMessage(IMsgInterface msgInterface)
         {
-
+            MessageRouteInfo.AddMessage(msgInterface);
         }
         /// <summary>
         /// 停止本地插件
@@ -91,7 +113,7 @@ namespace Assistant.Plugs
         /// <param name="logMsg"></param>
         public void WriteLog(string logMsg)
         {
-
+            MessageRouteInfo.AddMessage(new TextMsgInfo() { Text = logMsg, ReciverId = PluginsURL.FaceInterfaceId });
         }
     }
 }

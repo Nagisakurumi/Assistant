@@ -46,6 +46,7 @@ namespace Assistant.Plugs
                 RemoteURL = this.RemoteURL,
                 Size = this.Size,
                 Version = this.Version,
+                Id = this.Id,
             };
         }
     }

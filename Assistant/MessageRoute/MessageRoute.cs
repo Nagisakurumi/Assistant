@@ -1,10 +1,12 @@
-﻿using InterfaceLib.MsgInterface.MsgInfo;
+﻿using InterfaceLib.MsgInterface;
+using InterfaceLib.MsgInterface.MsgInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Assistant.Plugs.PluginsManager;
 
 namespace Assistant.MessageRoute
 {
@@ -20,7 +22,7 @@ namespace Assistant.MessageRoute
         /// <summary>
         /// 消息路由
         /// </summary>
-        public static MessageRoute MessageRouteInfo = new MessageRoute();
+        public readonly static MessageRoute MessageRouteInfo = new MessageRoute();
         /// <summary>
         /// 消息路由线程
         /// </summary>
@@ -66,6 +68,54 @@ namespace Assistant.MessageRoute
             {
                 continue_task();
             }
+        }
+        /// <summary>
+        /// 添加路由消息
+        /// </summary>
+        /// <param name="msgInterface"></param>
+        public void AddMessage(IMsgInterface msgInterface)
+        {
+            foreach (var item in msgInterface.MsgInfos)
+            {
+                AddMessage(item.Value);
+            }
+        }
+        /// <summary>
+        /// 打开消息路由循环
+        /// </summary>
+        private void MessageRouteLoop()
+        {
+            while (true)
+            {
+                if(infoBases.Count == 0)
+                {
+                    pause_task();
+                }
+                else
+                {
+                    IInfoBase infoBase = infoBases.Dequeue();
+                    MessageInterface messageInterface = new MessageInterface();
+                    while (infoBases.Count > 0 && (infoBase = infoBases.Dequeue()) != null)
+                    {
+                        messageInterface.AddMessage(infoBase);
+                    }
+                    ///发送给界面插件
+                    if (infoBase.ReciverId.Equals(Plugs.PluginsURL.FaceInterfaceId))
+                    {
+                        Manager.RunningFaceInterface.ReciverFromServerMsg(messageInterface);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 开启消息路由
+        /// </summary>
+        public void Start()
+        {
+            if (messageRouteThread != null && messageRouteThread.IsAlive)
+                return;
+            messageRouteThread = new Thread(MessageRouteLoop) { IsBackground = true };
+            messageRouteThread.Start();
         }
     }
 }

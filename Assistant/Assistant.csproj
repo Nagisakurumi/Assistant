@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleHelper.cs" />
+    <Compile Include="MessageRoute\MessageInterface.cs" />
     <Compile Include="MessageRoute\MessageRoute.cs" />
     <Compile Include="Plugs\Plugin.cs" />
     <Compile Include="Plugs\PlugInfo.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Plugs\PluginsURL.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerLog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

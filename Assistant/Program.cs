@@ -11,6 +11,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.IO;
 using static Assistant.Plugs.PluginsManager;
+using static Assistant.ServerLog;
+using static Assistant.MessageRoute.MessageRoute;
 
 namespace Assistant
 {
@@ -22,24 +24,26 @@ namespace Assistant
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            List<IPlugInfoInterface> audioInterfaces = Manager.AudioPlugInfos;
-            Console.WriteLine("插件列表!");
-            foreach (var item in audioInterfaces)
+            ///加载插件
+            Manager.LoadPlugins();
+            Manager.InitPlugins();
+            Log.Write("完成插件加载!");
+            Log.Write("所有初始化后的插件列表!");
+            MessageRouteInfo.Start();
+            Log.Write("开启消息路由!");
+            foreach (var item in Manager.PluginsContainer.Values)
             {
                 WriteObjectToJson(item);
             }
-            ///加载插件
-            Manager.LoadPlugins();
-            IAudioInterface plugin = Manager[0].Value.PluginInstance as IAudioInterface;
-            plugin.Init();
-            Console.Write("完成插件" + plugin.Name + "加载!");
+
+            //ConsoleHelper.hideConsole();
             //using (FileStream fileStream = File.Open("wav.wav", FileMode.Create))
             //{
             //    byte[] datas = plugin.StartBySecondTime(2);
             //    fileStream.Write(datas, 0, datas.Length);
             //}
             //plugin.Play("wav.wav");
-            plugin.Play(plugin.StartBySecondTime(8));
+            //plugin.Play(plugin.StartBySecondTime(8));
             //using (FileStream stream = File.Open(@"C:\Users\78633\Desktop\baiduai\test.wav", FileMode.Open))
             //{
             //    byte[] datas = new byte[stream.Length];

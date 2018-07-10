@@ -1,7 +1,9 @@
 ﻿using CacheLib;
 using InterfaceLib;
 using InterfaceLib.PlugsInterface;
+using InterfaceLib.PlugsInterface.AudioInterface;
 using InterfaceLib.PlugsInterface.CurrencyInterface;
+using InterfaceLib.PlugsInterface.FaceInterface;
 using InterfaceLib.ServerInterface;
 using LogLib;
 using System;
@@ -12,7 +14,8 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using static LogLib.LogInfo;
+using static Assistant.Plugs.ServerInterface;
+using static Assistant.ServerLog;
 
 namespace Assistant.Plugs
 {
@@ -22,9 +25,9 @@ namespace Assistant.Plugs
     partial class PluginsManager
     {
         /// <summary>
-        /// 插件容器
+        /// 运行中的插件容器
         /// </summary>
-        private Dictionary<string, Plugin> PluginsContainer { get; } = new Dictionary<string, Plugin>();
+        internal Dictionary<string, Plugin> PluginsContainer { get; } = new Dictionary<string, Plugin>();
         /// <summary>
         /// 缓存
         /// </summary>
@@ -36,7 +39,7 @@ namespace Assistant.Plugs
         {
             get
             {
-                IPlugInfoInterface[] plugInfoInterfaces = new IPlugInfoInterface[PlugInfoInterfaces.Count()];
+                IPlugInfoInterface[] plugInfoInterfaces = new IPlugInfoInterface[PluginsContainer.Count()];
                 int idx = 0;
                 foreach (var item in PluginsContainer)
                 {
@@ -53,6 +56,20 @@ namespace Assistant.Plugs
         /// 通用插件列表
         /// </summary>
         public List<IPlugInfoInterface> CurrencyPlugInfos => updateToMemory(PluginsURL.CurrencyPlugsSharp, getPlugInfoInterfaces);
+        /// <summary>
+        /// 界面插件
+        /// </summary>
+        public List<IPlugInfoInterface> FacePlugInfos => updateToMemory(PluginsURL.FacePlugsSharp, getPlugInfoInterfaces);
+        #region Run
+        /// <summary>
+        /// 获取运行中的界面插件
+        /// </summary>
+        public IFaceInterface RunningFaceInterface => getFirstTInterfaceFromRunningPluginsContainer<IFaceInterface>();
+        /// <summary>
+        /// 获取运行中的音频插件
+        /// </summary>
+        public IAudioInterface RunningAudioInterface => getFirstTInterfaceFromRunningPluginsContainer<IAudioInterface>();
+        #endregion
         /// <summary>
         /// 插件集合
         /// </summary>
@@ -80,7 +97,7 @@ namespace Assistant.Plugs
         /// <summary>
         /// 插件管理器
         /// </summary>
-        public static PluginsManager Manager = new PluginsManager();
+        public readonly static PluginsManager Manager = new PluginsManager();
         /// <summary>
         /// 单例构造函数
         /// </summary>
@@ -141,13 +158,13 @@ namespace Assistant.Plugs
         /// 加载插件
         /// </summary>
         /// <param name="info">插件信息</param>
-        private void loadCSharpPlugin(PlugInfo info)
+        private Plugin loadCSharpPlugin(PlugInfo info)
         {
             string name = Path.GetFileName(info.LocalURL);
             if (!File.Exists(info.LocalURL))
             {
                 Log.Write("加载插件", name, "失败, 原因 --> ", "插件路劲下不存在该插件!");
-                return;
+                return null;
             }
             try
             {
@@ -159,25 +176,18 @@ namespace Assistant.Plugs
                 if (plugin is null)
                 {
                     Log.Write("加载插件", name, "失败, 原因 --> ", "插件未提供有效的接口!");
-                    return;
+                    return null;
                 }
                 PlugInfo plugInfo = info.Clone();
                 plugInfo.Name = plugin.PluginInstance.Name;
+                info.Name = plugInfo.Name;
                 plugin.PlugInfo = plugInfo;
-                string id = EncryptWithMD5(name);
-                if (!PluginsContainer.ContainsKey(id))
-                {
-                    PluginsContainer.Add(id, plugin);
-                }
-                else
-                {
-                    Log.Write("加载插件", name, "失败, 原因 --> 插件已经加载，重复加载!");
-                    return;
-                }
+                return plugin;
             }
             catch (Exception ex)
             {
                 Log.Write("加载插件", name, "失败, 原因 --> ", ex.Message, "或者导出插件接口没有添加特性ExportAttribute");
+                return null;
             }
         }
         /// <summary>
@@ -209,9 +219,18 @@ namespace Assistant.Plugs
             if(memory == null)
             {
                 memory = func(path);
-                Cache.UpdateValueCache(path, memory, 3600);
+                Cache.UpdateValueCache(path, memory, 7200);
             }
             return memory;
+        }
+        /// <summary>
+        /// 从运行的容器中获取第一个T类型的插件
+        /// </summary>
+        /// <typeparam name="T">插件类型</typeparam>
+        /// <returns></returns>
+        private T getFirstTInterfaceFromRunningPluginsContainer<T>()
+        {
+            return (T)PluginsContainer.Values.Where(p => p.PluginInstance is T).First().PluginInstance;
         }
         /// <summary>
         /// 获取本地指定路径下的插件
@@ -227,9 +246,6 @@ namespace Assistant.Plugs
                 string[] fileNames = Directory.GetFiles(directorysitem);
                 foreach (var item in fileNames)
                 {
-                    //if (!Path.GetFileName(item).Contains(".dll") || !Path.GetFileName(item).Contains(PluginsURL.PlugNameStartContainer)
-                    //    || Path.GetFileName(item).IndexOf(PluginsURL.PlugNameStartContainer) != 0)
-                    //    continue;
                     try
                     {
                         if(Assembly.LoadFrom(item).GetExportedTypes().Where(p=>
@@ -238,7 +254,7 @@ namespace Assistant.Plugs
                             continue;
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         continue;
                     }
@@ -253,6 +269,7 @@ namespace Assistant.Plugs
                     plugInfo.Version = Assembly.LoadFrom(item).ImageRuntimeVersion;
                     plugInfo.Author = "";
                     info = null;
+                    plugInfo.Id = Guid.NewGuid().ToString() + DateTime.Now.ToString();
                     plugs.Add(plugInfo);
                 }
             }
@@ -263,9 +280,40 @@ namespace Assistant.Plugs
         /// </summary>
         public void LoadPlugins()
         {
-            foreach (var item in AudioPlugInfos)
+            Plugin plugin = null;
+            if(AudioPlugInfos.Count == 0)
             {
-                loadCSharpPlugin(item as PlugInfo);
+                Log.Write("缺少音频插件!");
+            }
+            else
+            {
+                plugin = loadCSharpPlugin(AudioPlugInfos[0] as PlugInfo);
+                PluginsContainer.Add(plugin.PlugInfo.Id, plugin);
+            }
+            foreach (var item in CurrencyPlugInfos)
+            {
+                plugin = loadCSharpPlugin(item as PlugInfo);
+                PluginsContainer.Add(plugin.PlugInfo.Id, plugin);
+            }
+            if (FacePlugInfos.Count == 0)
+            {
+                Log.Write("缺少界面插件!");
+            }
+            else
+            {
+                plugin = loadCSharpPlugin(FacePlugInfos[0] as PlugInfo);
+                PluginsContainer.Add(plugin.PlugInfo.Id, plugin);
+            }
+        }
+        /// <summary>
+        /// 初始化插件
+        /// </summary>
+        public void InitPlugins()
+        {
+            foreach (var item in PluginsContainer.Values)
+            {
+                item.PluginInstance.Start(Server);
+                item.PluginInstance.Init();
             }
         }
     }

@@ -7,6 +7,33 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Canvas Name="controls">
+
+        </Canvas>
+        <ListBox Grid.Row="1" Name="controlTitles" SelectionChanged="controlTitles_SelectionChanged">
+            <ListBox.Template>
+                <ControlTemplate>
+                    <ScrollViewer ScrollViewer.CanContentScroll="True"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <StackPanel IsItemsHost="True" Orientation="Horizontal" >
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ListBox.Template>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="Black" Margin="1">
+                        <TextBlock HorizontalAlignment="Center" FontSize="15" Text="{Binding Path=Notice}"
+                               VerticalAlignment="Center" Foreground="White"></TextBlock>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>

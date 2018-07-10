@@ -49,14 +49,13 @@
     <Compile Include="MsgInterface\MsgInfo\IFileInfo.cs" />
     <Compile Include="MsgInterface\MsgInfo\IInfoBase.cs" />
     <Compile Include="MsgInterface\MsgInfo\ITextInfo.cs" />
+    <Compile Include="PlugsInterface\FaceInterface\IFaceInterface.cs" />
     <Compile Include="PlugsInterface\IPlugInfoInterface.cs" />
     <Compile Include="PlugsInterface\AudioInterface\IAudioInterface.cs" />
     <Compile Include="PlugsInterface\IPlugBaseInterface.cs" />
     <Compile Include="ServerInterface\IServerInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PlugsInterface\FaceInterface\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
