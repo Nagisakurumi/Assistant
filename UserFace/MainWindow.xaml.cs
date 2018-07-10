@@ -79,7 +79,7 @@ namespace UserFace
         /// <param name="e"></param>
         private void controlTitles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            MovePanel movePanel = (MovePanel)sender;
+            MovePanel movePanel = controlTitles.SelectedItem as MovePanel;
             Canvas.SetZIndex(movePanel, 9999);
 
         }
