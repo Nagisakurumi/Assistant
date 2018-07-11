@@ -32,3 +32,6 @@ _ReSharper*/
 packages/
 *.pdb
 *.dll
+*.g.cs
+*.g.i.cs
+*/obj/Debug/*
