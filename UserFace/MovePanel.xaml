@@ -5,50 +5,68 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserFace"
              Width="500" Height="400" x:Name="main" Canvas.Left="{Binding ElementName=main,Path=PanelX}"
-              Canvas.Top="{Binding ElementName=main,Path=PanelY}" Background="White">
+              Canvas.Top="{Binding ElementName=main,Path=PanelY}" Background="White"
+             >
     <Border BorderBrush="Black" BorderThickness="3">
-        <Grid>
+        <Grid ClipToBounds="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <Border Name="notice_Richbox" Background="White" MouseDown="notice_Richbox_MouseDown"
+            <Grid Name="notice_Richbox" Background="White" MouseDown="notice_Richbox_MouseDown"
                     MouseLeave="notice_Richbox_MouseLeave" MouseMove="notice_Richbox_MouseMove"
                     MouseUp="notice_Richbox_MouseUp"
                     >
-                <TextBlock HorizontalAlignment="Center" FontSize="20" VerticalAlignment="Center"
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Grid.Column="0" Text="Plugins"  VerticalAlignment="Center"
+                           Width="70" FontSize="20" Margin="3"></TextBlock>
+                        <ComboBox Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                          Width="100" Margin="1" Name="idCombox"></ComboBox>
+                        <!--<Image Cursor="Hand" MouseDown="hidenIcon_MouseDown" Stretch="Fill"
+                           Width="30" Height="30" HorizontalAlignment="Right" Source="pack://siteoforigin:,,,/Resources/hide.png">
+                        </Image>-->
+                    </StackPanel>
+                    <Image Cursor="Hand" Stretch="Fill" MouseDown="hidenIcon_MouseDown" DockPanel.Dock="Right" Margin="0, 0, 10, 0"
+                           Width="30" Height="30" Name="hideIcon" HorizontalAlignment="Right" Source="pack://siteoforigin:,,,/Resources/hide.png">
+                    </Image>
+                </DockPanel>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" FontSize="20" VerticalAlignment="Center"
                            Name="notice">
                     
                 </TextBlock>
-            </Border>
+            </Grid>
 
-            <RichTextBox Name="content_Richbox" Grid.Row="1" ScrollViewer.PanningMode="VerticalOnly" ScrollViewer.PanningRatio="10" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Visible">
+            <RichTextBox Name="content_Richbox"  IsReadOnly="True" Foreground="White" GotFocus="content_Richbox_GotFocus" 
+                         Grid.Row="1" ScrollViewer.PanningMode="VerticalOnly" ScrollViewer.PanningRatio="10" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Visible">
                 <!--<RichTextBox.Background>
                 <ImageBrush ImageSource="Resouse/log.jpg" Opacity="0.2"/>
             </RichTextBox.Background>-->
                 <FlowDocument Background="Black">
                     <Paragraph Margin="1" Name="content">
-
+                        
                     </Paragraph>
                 </FlowDocument>
             </RichTextBox>
 
-            <Border Grid.Row="1" Height="60" VerticalAlignment="Bottom" BorderBrush="White"
-                BorderThickness="2" Background="{x:Null}">
+            <Border Grid.Row="1" Name="inputBox" Height="40" VerticalAlignment="Bottom" BorderBrush="White"
+                BorderThickness="2" Background="{x:Null}" Margin="0, 0, 0, -40">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80"></ColumnDefinition>
-                        <ColumnDefinition Width="110"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Plugins" Foreground="White" VerticalAlignment="Center"
-                           Width="70" FontSize="20" Margin="3"></TextBlock>
-                    <ComboBox Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                          Width="100" Margin="10" Name="idCombox"></ComboBox>
-                    <Border Grid.Column="2" BorderBrush="White" BorderThickness="2" Background="Black" Width="auto">
-                        <TextBox Background="Black" Margin="3" CaretBrush="White"
-                             Foreground="White" VerticalContentAlignment="Center"></TextBox>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Text="Inputs" Foreground="White" FontSize="20"></TextBlock>
+                    <Border Grid.Column="1" BorderBrush="White" BorderThickness="2" 
+                            Background="Black" Width="auto">
+                        <TextBox Background="Black" Margin="3" CaretBrush="White" LostFocus="content_Richbox_LostFocus"
+                             Foreground="White" Name="inputTextBox" VerticalContentAlignment="Center"></TextBox>
                     </Border>
                 </Grid>
             </Border>

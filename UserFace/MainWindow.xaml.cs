@@ -28,20 +28,22 @@ namespace UserFace
         /// 控件面板集合
         /// </summary>
         private ObservableCollection<MovePanel> movePanels = new ObservableCollection<MovePanel>();
+        /// <summary>
+        /// 当前置顶的
+        /// </summary>
+        private MovePanel currentZindex = null;
+        /// <summary>
+        /// 其他信息打印
+        /// </summary>
+        private MovePanel otherPanel = new MovePanel()
+        {
+            Notice = "其他",
+        };
 
         public MainWindow()
         {
             InitializeComponent();
             this.Loaded += MainWindow_Loaded;
-        }
-        /// <summary>
-        /// 加载事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-
             foreach (var item in PlugInfoInterfaces)
             {
                 MovePanel ml = new MovePanel()
@@ -51,10 +53,25 @@ namespace UserFace
                 };
                 ml.Notice = item.Name;
                 addControl(ml);
-
             }
-            controlTitles.ItemsSource = movePanels;
+            addControl(otherPanel);
             MessageCallBack += MainWindow_MessageCallBack;
+        }
+        /// <summary>
+        /// 加载事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // 设置全屏
+
+            //this.Left = 0.0;
+            //this.Top = 0.0;
+            //this.Width = System.Windows.SystemParameters.PrimaryScreenWidth;
+            //this.Height = System.Windows.SystemParameters.PrimaryScreenHeight;
+
+            controlTitles.ItemsSource = movePanels;
         }
         /// <summary>
         /// 消息回调
@@ -64,11 +81,19 @@ namespace UserFace
         {
             try
             {
-                movePanels.Where(p => p.MainId == obj.ReciverId).First().AddMessage(obj);
+                if(obj.MessageType == InterfaceLib.MsgInterface.MsgInfo.Enums.MessageType.File)
+                {
+                    otherPanel.AddMessage(obj);
+                }
+                else
+                {
+                    movePanels.Where(p => p.MainId.Equals(obj.SendId)).First().AddMessage(obj);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Log.Write("接受消息出错!");
+                otherPanel.AddMessage(obj);
+                //Log.Write("接受消息出错!", ex, "obj.SendId-->", obj.SendId, "obj.ReciverId-->", obj.ReciverId);
             }
         }
 
@@ -81,7 +106,12 @@ namespace UserFace
         {
             MovePanel movePanel = controlTitles.SelectedItem as MovePanel;
             Canvas.SetZIndex(movePanel, 9999);
-
+            if(currentZindex != null)
+            {
+                Canvas.SetZIndex(currentZindex, 1);
+            }
+            currentZindex = movePanel;
+            movePanel.Visibility = Visibility.Visible;
         }
 
         private void addControl(MovePanel movePanel)

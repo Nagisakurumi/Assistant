@@ -16,6 +16,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static UserFace.Interface;
+using static UserFace.FaceInterfaceLog;
+using System.Windows.Media.Animation;
+using UserFace.Tools;
+using System.Windows.Interop;
 
 namespace UserFace
 {
@@ -30,15 +34,27 @@ namespace UserFace
             this.Loaded += MovePanel_Loaded;
         }
         /// <summary>
+        /// 最大显示数量
+        /// </summary>
+        public static readonly long MaxLogCount = 1000;
+        /// <summary>
         /// 加载
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MovePanel_Loaded(object sender, RoutedEventArgs e)
         {
-            idCombox.ItemsSource = PlugInfoInterfaces;
-            idCombox.DisplayMemberPath = "Id";
-            idCombox.SelectedItem = PlugInfoInterfaces.Where(p=>p.Id == MainId).First();
+            hideIcon.Source = Imaging.CreateBitmapSourceFromHBitmap(Properties.Resources.hide.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            try
+            {
+                idCombox.ItemsSource = PlugInfoInterfaces;
+                idCombox.DisplayMemberPath = "Id";
+                idCombox.SelectedItem = PlugInfoInterfaces.Where(p => p.Id == MainId).First();
+            }
+            catch (Exception)
+            {
+                
+            }
         }
 
         /// <summary>
@@ -172,53 +188,99 @@ namespace UserFace
         /// <param name="msg"></param>
         private void AddTextMsg(string msg)
         {
-            //content_Richbox.CaretPosition.InsertLineBreak();
-            //content_Richbox.Focus();
-            //content_Richbox.CaretPosition = content_Richbox.CaretPosition.InsertParagraphBreak();
-            content.Inlines.Add(msg);
+            this.Dispatcher.Invoke(new Action<string>((m) => {
+                try
+                {
+                    if (content.Inlines.Count > MaxLogCount)
+                    {
+                        content.Inlines.Clear();
+                    }
+                    content.Inlines.Add(m);
+                    this.content_Richbox.ScrollToEnd();
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(ex);
+                }
+            }), msg);
         }
         /// <summary>
         /// 添加图片的信息
         /// </summary>
         /// <param name="path"></param>
-        private void AddImageMsg(string path)
+        private void AddImageMsg(string pathstring)
         {
-            FileInfo fileInfo = new FileInfo(path);
-            if(fileInfo.Exists)
-            {
-                BitmapImage image = new BitmapImage();
-                using (FileStream stream = fileInfo.OpenRead())
+            this.Dispatcher.Invoke(new Action<string>((path) => {
+                try
                 {
-                    image.StreamSource = new MemoryStream();
-                    stream.CopyTo(image.StreamSource);
-                }
-                content.Inlines.Add(new Image()
-                {
-                    Source = image,
-                    Stretch = Stretch.Fill,
-                    MaxWidth = 200,
-                    MaxHeight = 200,
-                });
+                    if (content.Inlines.Count > MaxLogCount)
+                    {
+                        content.Inlines.Clear();
+                    }
+                    FileInfo fileInfo = new FileInfo(path);
+                    if (fileInfo.Exists)
+                    {
+                        BitmapImage image = new BitmapImage();
+                        using (FileStream stream = fileInfo.OpenRead())
+                        {
+                            image.BeginInit();
+                            image.StreamSource = new MemoryStream();
+                            stream.CopyTo(image.StreamSource);
+                            image.EndInit();
+                        }
+                        content.Inlines.Add(new Image()
+                        {
+                            Source = image,
+                            Stretch = Stretch.Fill,
+                            MaxWidth = 200,
+                            MaxHeight = 200,
+                        });
 
-            }
-            fileInfo = null;
+                    }
+                    fileInfo = null;
+                    this.content_Richbox.ScrollToEnd();
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(ex);
+                }
+            }), pathstring);
+            
         }
         /// <summary>
         /// 添加图片的信息
         /// </summary>
         /// <param name="stream"></param>
-        private void AddImageMsg(Stream stream)
+        private void AddImageMsg(Stream imgstream)
         {
-            BitmapImage image = new BitmapImage();
-            image.StreamSource = new MemoryStream();
-            stream.CopyTo(image.StreamSource);
-            content.Inlines.Add(new Image()
+            this.Dispatcher.Invoke(new Action<Stream>((stream) => 
             {
-                Source = image,
-                Stretch = Stretch.Fill,
-                MaxWidth = 200,
-                MaxHeight = 200,
-            });
+                try
+                {
+                    if (content.Inlines.Count > MaxLogCount)
+                    {
+                        content.Inlines.Clear();
+                    }
+
+                    BitmapImage image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = new MemoryStream();
+                    stream.CopyTo(image.StreamSource);
+                    image.EndInit();
+                    content.Inlines.Add(new Image()
+                    {
+                        Source = image,
+                        Stretch = Stretch.Fill,
+                        MaxWidth = 200,
+                        MaxHeight = 200,
+                    });
+                    this.content_Richbox.ScrollToEnd();
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(ex);
+                }
+            }), imgstream);
         }
         /// <summary>
         /// 判断是否是图片信息
@@ -271,5 +333,58 @@ namespace UserFace
             this.MU?.Invoke(this, e);
         }
         #endregion
+
+        #region 失去获得焦点
+        /// <summary>
+        /// 是否已经升上来了
+        /// </summary>
+        private bool isUp = false;
+        /// <summary>
+        /// 位置动画
+        /// </summary>
+        private ThicknessAnimation thicknessAnimation = new ThicknessAnimation();
+        /// <summary>
+        /// 获取焦点
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void content_Richbox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (!isUp)
+            {
+                thicknessAnimation.From = new Thickness(0, 0, 0, -inputBox.Height);
+                thicknessAnimation.To = new Thickness(0, 0, 0, 2);
+                thicknessAnimation.Duration = TimeSpan.FromMilliseconds(500);
+                inputBox.BeginAnimation(Grid.MarginProperty, thicknessAnimation);
+                isUp = true;
+            }
+            inputTextBox.Focus();
+        }
+        /// <summary>
+        /// 失去焦点
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void content_Richbox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (isUp)
+            {
+                thicknessAnimation.From = new Thickness(0, 0, 0, 2);
+                thicknessAnimation.To = new Thickness(0, 0, 0, -inputBox.Height);
+                thicknessAnimation.Duration = TimeSpan.FromMilliseconds(500);
+                inputBox.BeginAnimation(Grid.MarginProperty, thicknessAnimation);
+                isUp = false;
+            }
+        }
+        #endregion
+        /// <summary>
+        /// 隐藏
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void hidenIcon_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
     }
 }

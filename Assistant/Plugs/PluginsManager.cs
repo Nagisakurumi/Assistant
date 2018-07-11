@@ -22,7 +22,7 @@ namespace Assistant.Plugs
     /// <summary>
     /// 插件管理容器
     /// </summary>
-    partial class PluginsManager
+    partial class PluginsManager : IDisposable
     {
         /// <summary>
         /// 运行中的插件容器
@@ -230,7 +230,14 @@ namespace Assistant.Plugs
         /// <returns></returns>
         private T getFirstTInterfaceFromRunningPluginsContainer<T>()
         {
-            return (T)PluginsContainer.Values.Where(p => p.PluginInstance is T).First().PluginInstance;
+            try
+            {
+                return (T)PluginsContainer.Values.Where(p => p.PluginInstance is T).First().PluginInstance;
+            }
+            catch (Exception)
+            {
+                return default(T);
+            }
         }
         /// <summary>
         /// 获取本地指定路径下的插件
@@ -312,9 +319,23 @@ namespace Assistant.Plugs
         {
             foreach (var item in PluginsContainer.Values)
             {
-                item.PluginInstance.Start(Server);
+                item.PluginInstance.Start(Server, item.PlugInfo.Id);
+            }
+            foreach (var item in PluginsContainer.Values)
+            {
                 item.PluginInstance.Init();
             }
         }
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            PluginsContainer.Clear();
+            Cache = null;
+
+
+        }
+
     }
 }

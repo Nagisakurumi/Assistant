@@ -36,7 +36,7 @@ namespace Assistant
                 WriteObjectToJson(item);
             }
 
-            //ConsoleHelper.hideConsole();
+            ConsoleHelper.hideConsole();
             //using (FileStream fileStream = File.Open("wav.wav", FileMode.Create))
             //{
             //    byte[] datas = plugin.StartBySecondTime(2);
@@ -53,6 +53,7 @@ namespace Assistant
             //}
             //plugin.Play(@"C:\Users\78633\Desktop\baiduai\test.wav");
             Console.ReadKey();
+            Manager.Dispose();
         }
 
         /// <summary>

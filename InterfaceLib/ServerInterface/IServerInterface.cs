@@ -51,12 +51,14 @@ namespace InterfaceLib.ServerInterface
         /// 向服务写入日志
         /// </summary>
         /// <param name="logMsg">日志内容</param>
-        void WriteLog(string logMsg);
+        /// <param name="sendId">发送者的id</param>
+        void WriteLog(string sendId, string logMsg);
         /// <summary>
         /// 写入内容到显示插件上显示
         /// </summary>
         /// <param name="msg"></param>
-        void SendMsgToDispla(string msg);
+        /// <param name="sendId">发送者的id</param>
+        void SendMsgToDispla(string sendId, string msg);
         /// <summary>
         /// 发送消息到服务
         /// </summary>

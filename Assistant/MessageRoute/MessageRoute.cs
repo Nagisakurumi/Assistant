@@ -91,9 +91,10 @@ namespace Assistant.MessageRoute
                 {
                     pause_task();
                 }
-                else
+                else if(Manager.RunningFaceInterface != null)
                 {
-                    IInfoBase infoBase = infoBases.Dequeue();
+                    //IInfoBase infoBase = infoBases.Dequeue();
+                    IInfoBase infoBase = null;
                     MessageInterface messageInterface = new MessageInterface();
                     while (infoBases.Count > 0 && (infoBase = infoBases.Dequeue()) != null)
                     {
@@ -104,6 +105,7 @@ namespace Assistant.MessageRoute
                     {
                         Manager.RunningFaceInterface.ReciverFromServerMsg(messageInterface);
                     }
+                    infoBase = null;
                 }
             }
         }

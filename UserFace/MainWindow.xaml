@@ -5,16 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UserFace"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Manager" Height="450" Width="800" Background="#00000000" ResizeMode="NoResize"
+        WindowState="Maximized" WindowStyle="None"
+        AllowsTransparency="True">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Canvas Name="controls">
-
-        </Canvas>
-        <ListBox Grid.Row="1" Name="controlTitles" SelectionChanged="controlTitles_SelectionChanged">
+        <ListBox Grid.Row="0" Name="controlTitles" FlowDirection="RightToLeft" SelectionChanged="controlTitles_SelectionChanged">
             <ListBox.Template>
                 <ControlTemplate>
                     <ScrollViewer ScrollViewer.CanContentScroll="True"
@@ -35,5 +34,9 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <Canvas Name="controls" Background="#00000000" Grid.Row="1">
+
+        </Canvas>
+        
     </Grid>
 </Window>

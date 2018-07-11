@@ -18,6 +18,10 @@ namespace SmartQQ
     public class Interface : ICurrencyInterface
     {
         /// <summary>
+        /// 插件被分配的id
+        /// </summary>
+        private string id = "";
+        /// <summary>
         /// SmartQQ控制对象
         /// </summary>
         private SmartQQBot SmartQQ = new SmartQQBot();
@@ -40,7 +44,6 @@ namespace SmartQQ
         public bool Init()
         {
             SmartQQ.MessageCallBack += MessageCall;
-            SmartQQLog.Log.ErroStringEvent += Log_ErroStringEvent;
             loginThread = new Thread(() =>
             {
                 SmartQQ.GetLoginParamter();
@@ -53,15 +56,15 @@ namespace SmartQQ
                 messageInterface.AddMessage(new FileMsgInfo() {
                     Path = SmartQQ.SaveLoginImagePath,
                     ReciverId = "1",
-                    SendId = this.GetHashCode().ToString(),
+                    SendId = id,
                     ExtendName = "png",
                     Stream = null,
                 });
                 ServerInterface.SendToMessage(messageInterface);
-                Log.Write("已经完成二维码的下载，请尽快扫码!");
                 while (true)
                 {
                     Thread.Sleep(2000);
+                    //Log.Write("已经完成二维码的下载，请尽快扫码!");
                     if (SmartQQ.CheckLogin())
                     {
                         break;
@@ -72,7 +75,7 @@ namespace SmartQQ
                 SmartQQ.UpdateFrindsList();
                 SmartQQ.UpdateGroup();
                 SmartQQ.StartMessageLoop();
-                ServerInterface.SendMsgToDispla("SmartQQ,开始进入消息收发循环," +
+                ServerInterface.SendMsgToDispla(id, "SmartQQ,开始进入消息收发循环," +
                     "操作步骤->发送命令:" +
                     "1.给某个特定的用户发送好友消息格式，\"sf\" : {\"uin\", \"message\"} -> {好友的uin, 发送给好友的消息}\n" +
                     "2.发送消息给群格式, \"sg\" : {\"uin\", \"message\"} - > {群的uin, 要发送的消息}\n" +
@@ -90,7 +93,7 @@ namespace SmartQQ
         /// <param name="obj"></param>
         private void Log_ErroStringEvent(string obj)
         {
-            ServerInterface.WriteLog(obj);
+            ServerInterface.WriteLog(id, obj);
         }
 
         /// <summary>
@@ -142,10 +145,13 @@ namespace SmartQQ
         /// 启动插件
         /// </summary>
         /// <param name="serverInterface"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public bool Start(IServerInterface serverInterface)
+        public bool Start(IServerInterface serverInterface, string id)
         {
             ServerInterface = serverInterface;
+            Log.ErroStringEvent += Log_ErroStringEvent;
+            this.id = id;
             return true;
         }
         /// <summary>

@@ -34,8 +34,9 @@ namespace InterfaceLib.PlugsInterface
         /// 启动插件
         /// </summary>
         /// <param name="serverInterface">服务对象</param>
+        /// <param name="id">服务分配给插件的id</param>
         /// <returns></returns>
-        bool Start(IServerInterface serverInterface);
+        bool Start(IServerInterface serverInterface, string id);
         /// <summary>
         /// 终止插件
         /// </summary>

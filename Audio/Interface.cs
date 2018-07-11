@@ -18,6 +18,10 @@ namespace Audio
     public class Interface : IAudioInterface
     {
         /// <summary>
+        /// id
+        /// </summary>
+        private string id = "";
+        /// <summary>
         /// 构造函数
         /// </summary>
         public Interface()
@@ -79,8 +83,9 @@ namespace Audio
         /// 启动插件
         /// </summary>
         /// <returns></returns>
-        public bool Start(IServerInterface serverInterface)
+        public bool Start(IServerInterface serverInterface, string id)
         {
+            this.id = id;
             return true;
         }
         /// <summary>

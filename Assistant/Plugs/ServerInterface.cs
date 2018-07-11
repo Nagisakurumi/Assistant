@@ -30,7 +30,7 @@ namespace Assistant.Plugs
         /// <param name="obj"></param>
         private void Log_ErroStringEvent(string obj)
         {
-            Server.WriteLog(obj);
+            Server.WriteLog("0", obj);
         }
 
         /// <summary>
@@ -77,9 +77,12 @@ namespace Assistant.Plugs
         /// 发送给界面插件显示
         /// </summary>
         /// <param name="msg"></param>
-        public void SendMsgToDispla(string msg)
+        /// <param name="id">发送者id</param>
+        public void SendMsgToDispla(string id, string msg)
         {
-            MessageRouteInfo.AddMessage(new TextMsgInfo() { Text = msg, ReciverId = PluginsURL.FaceInterfaceId });
+            MessageRouteInfo.AddMessage(new TextMsgInfo()
+            { Text = msg, ReciverId = PluginsURL.FaceInterfaceId,
+            SendId = id,});
         }
         /// <summary>
         /// 路由消息
@@ -111,9 +114,13 @@ namespace Assistant.Plugs
         /// 写入到日志
         /// </summary>
         /// <param name="logMsg"></param>
-        public void WriteLog(string logMsg)
+        /// <param name="id">发送者id</param>
+        public void WriteLog(string id, string logMsg)
         {
-            MessageRouteInfo.AddMessage(new TextMsgInfo() { Text = logMsg, ReciverId = PluginsURL.FaceInterfaceId });
+            MessageRouteInfo.AddMessage(new TextMsgInfo()
+            { Text = logMsg, ReciverId = PluginsURL.FaceInterfaceId,
+                SendId = id,
+            });
         }
     }
 }

@@ -42,6 +42,8 @@ namespace UserFace
         /// 服务
         /// </summary>
         public static IServerInterface ServerInterface = null;
+        private string id;
+
         /// <summary>
         /// 信息回调
         /// </summary>
@@ -60,10 +62,7 @@ namespace UserFace
         /// <returns></returns>
         public bool Init()
         {
-            faceMainThread = new Thread(faceMainThreadRun);
-            faceMainThread.IsBackground = true;
-            faceMainThread.SetApartmentState(ApartmentState.STA);
-            faceMainThread.Start();
+            
             return true;
         }
         /// <summary>
@@ -72,9 +71,20 @@ namespace UserFace
         /// <param name="msgInterface"></param>
         public void ReciverFromServerMsg(IMsgInterface msgInterface)
         {
-            foreach (var item in msgInterface.MsgInfos)
+            try
             {
-                MessageCallBack?.Invoke(item.Value);
+                foreach (var item in msgInterface.MsgInfos)
+                {
+                    //if(item.Value.MessageType == InterfaceLib.MsgInterface.MsgInfo.Enums.MessageType.File)
+                    //{
+                    //    Log.Write("FileMessage", item.Value.SendId);
+                    //}
+                    MessageCallBack?.Invoke(item.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write(ex);
             }
         }
         /// <summary>
@@ -82,10 +92,14 @@ namespace UserFace
         /// </summary>
         /// <param name="serverInterface"></param>
         /// <returns></returns>
-        public bool Start(IServerInterface serverInterface)
+        public bool Start(IServerInterface serverInterface, string id)
         {
             ServerInterface = serverInterface;
-            
+            this.id = id;
+            faceMainThread = new Thread(faceMainThreadRun);
+            faceMainThread.IsBackground = true;
+            faceMainThread.SetApartmentState(ApartmentState.STA);
+            faceMainThread.Start();
             return true;
         }
         /// <summary>
