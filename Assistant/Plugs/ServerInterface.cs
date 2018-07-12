@@ -122,5 +122,27 @@ namespace Assistant.Plugs
                 SendId = id,
             });
         }
+        /// <summary>
+        /// 关闭服务
+        /// </summary>
+        public void ServerClose()
+        {
+            App.Current.Shutdown();
+            
+        }
+        /// <summary>
+        /// 显示
+        /// </summary>
+        public void ShowServer()
+        {
+            App.Current.MainWindow.Show();
+        }
+        /// <summary>
+        /// 隐藏
+        /// </summary>
+        public void HidenServer()
+        {
+            App.Current.MainWindow.Hide();
+        }
     }
 }

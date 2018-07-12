@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assistant", "Assistant\Assistant.csproj", "{4C4A8909-36B3-4581-A8E7-3C890941F7DF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserFace", "UserFace\UserFace.csproj", "{364B0908-1555-4DD1-A79E-E6987D1C29B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceLib", "InterfaceLib\InterfaceLib.csproj", "{FBF727C6-DC98-4041-A068-E16E72ED43A9}"
@@ -27,16 +25,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Audio", "Audio", "{1B797082
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audio", "Audio\Audio.csproj", "{71464686-E05D-4D9B-A809-C2666A8123A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assistant", "Assistant\Assistant.csproj", "{51E45E62-BEC3-48BF-8240-4155312F4EAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4C4A8909-36B3-4581-A8E7-3C890941F7DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C4A8909-36B3-4581-A8E7-3C890941F7DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C4A8909-36B3-4581-A8E7-3C890941F7DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4C4A8909-36B3-4581-A8E7-3C890941F7DF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{364B0908-1555-4DD1-A79E-E6987D1C29B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{364B0908-1555-4DD1-A79E-E6987D1C29B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{364B0908-1555-4DD1-A79E-E6987D1C29B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,6 +57,10 @@ Global
 		{71464686-E05D-4D9B-A809-C2666A8123A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71464686-E05D-4D9B-A809-C2666A8123A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71464686-E05D-4D9B-A809-C2666A8123A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51E45E62-BEC3-48BF-8240-4155312F4EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51E45E62-BEC3-48BF-8240-4155312F4EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51E45E62-BEC3-48BF-8240-4155312F4EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51E45E62-BEC3-48BF-8240-4155312F4EAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

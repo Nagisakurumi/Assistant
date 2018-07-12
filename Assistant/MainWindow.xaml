@@ -1,0 +1,20 @@
+﻿<Window x:Class="Assistant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Assistant"
+        mc:Ignorable="d"
+        Title="Server" Height="450" Width="800" ShowInTaskbar="False">
+    <RichTextBox Name="content_Richbox"  IsReadOnly="True" Foreground="White"
+                         Grid.Row="1" ScrollViewer.PanningMode="VerticalOnly" ScrollViewer.PanningRatio="10" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Visible">
+        <!--<RichTextBox.Background>
+                <ImageBrush ImageSource="Resouse/log.jpg" Opacity="0.2"/>
+            </RichTextBox.Background>-->
+        <FlowDocument Background="Black">
+            <Paragraph Margin="1" Name="content">
+
+            </Paragraph>
+        </FlowDocument>
+    </RichTextBox>
+</Window>
