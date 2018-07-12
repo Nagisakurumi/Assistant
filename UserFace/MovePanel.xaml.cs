@@ -48,7 +48,7 @@ namespace UserFace
             try
             {
                 idCombox.ItemsSource = PlugInfoInterfaces;
-                idCombox.DisplayMemberPath = "Id";
+                idCombox.DisplayMemberPath = "Name";
                 idCombox.SelectedItem = PlugInfoInterfaces.Where(p => p.Id == MainId).First();
             }
             catch (Exception)

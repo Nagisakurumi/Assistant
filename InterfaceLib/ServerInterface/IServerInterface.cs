@@ -64,5 +64,17 @@ namespace InterfaceLib.ServerInterface
         /// </summary>
         /// <param name="msgInterface">消息</param>
         void SendToMessage(IMsgInterface msgInterface);
+        /// <summary>
+        /// 关闭服务
+        /// </summary>
+        void ServerClose();
+        /// <summary>
+        /// 显示服务控制台
+        /// </summary>
+        void ShowServer();
+        /// <summary>
+        /// 隐藏服务控制台
+        /// </summary>
+        void HidenServer();
     }
 }

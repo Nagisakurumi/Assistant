@@ -121,10 +121,12 @@ namespace UserFace
                 MainWindow mainWindow = new MainWindow();
                 mainWindow.ShowDialog();
                 Log.Write("界面插件被关闭!");
+                ServerInterface.ServerClose();
             }
             catch (Exception ex)
             {
                 Log.Write("界面插件运行异常被关闭", ex);
+                ServerInterface.ServerClose();
             }
 
         }

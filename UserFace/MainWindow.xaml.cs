@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using static UserFace.Interface;
 using static LogLib.LogInfo;
 using System.Collections.ObjectModel;
+using System.Windows.Forms;
 
 namespace UserFace
 {
@@ -24,6 +25,10 @@ namespace UserFace
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 最小化任务栏图标
+        /// </summary>
+        private System.Windows.Forms.NotifyIcon notifyIcon = new System.Windows.Forms.NotifyIcon();
         /// <summary>
         /// 控件面板集合
         /// </summary>
@@ -56,7 +61,20 @@ namespace UserFace
             }
             addControl(otherPanel);
             MessageCallBack += MainWindow_MessageCallBack;
+            this.Closed += MainWindow_Closed;
         }
+        /// <summary>
+        /// 窗体关闭
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            notifyIcon.Visible = false;
+            notifyIcon.Dispose();
+            notifyIcon = null;
+        }
+
         /// <summary>
         /// 加载事件
         /// </summary>
@@ -72,7 +90,48 @@ namespace UserFace
             //this.Height = System.Windows.SystemParameters.PrimaryScreenHeight;
 
             controlTitles.ItemsSource = movePanels;
+
+
+            InitIcon();
         }
+        #region IconOption
+
+        private void InitIcon()
+        {
+            this.notifyIcon.BalloonTipText = "助手"; //设置程序启动时显示的文本
+            this.notifyIcon.Text = "Assistant";//最小化到托盘时，鼠标点击时显示的文本
+            this.notifyIcon.Icon = Properties.Resources.icon;
+            this.notifyIcon.Visible = true;
+            //notifyIcon.MouseDoubleClick += OnNotifyIconDoubleClick;
+            this.notifyIcon.ShowBalloonTip(1000);
+
+            System.Windows.Forms.MenuItem m1 = new System.Windows.Forms.MenuItem("关闭");
+            m1.Click += Server_Close;
+            System.Windows.Forms.MenuItem m2 = new System.Windows.Forms.MenuItem("全部隐藏");
+            m2.Click += Hidden_All;
+            System.Windows.Forms.MenuItem m3 = new System.Windows.Forms.MenuItem("显示");
+            m2.Click += Show_All;
+            System.Windows.Forms.MenuItem[] m = new System.Windows.Forms.MenuItem[] { m1, m2, m3 };
+            this.notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(m);
+        }
+
+        private void Show_All(object sender, EventArgs e)
+        {
+            this.Visibility = Visibility.Visible;
+        }
+
+        private void Hidden_All(object sender, EventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
+
+        private void Server_Close(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        #endregion
+
         /// <summary>
         /// 消息回调
         /// </summary>
@@ -157,7 +216,7 @@ namespace UserFace
             currentPoint = e.GetPosition(this);
         }
 
-        private void notice_Richbox_MouseMove(object sender, MouseEventArgs e)
+        private void notice_Richbox_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Point point = e.GetPosition(this);
             if (isMove)
@@ -172,7 +231,7 @@ namespace UserFace
                 }
             }
         }
-        private void TitleBox_MouseLeave(object sender, MouseEventArgs e)
+        private void TitleBox_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             isMove = false;
         }

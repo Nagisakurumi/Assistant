@@ -1,5 +1,6 @@
 ﻿using InterfaceLib;
 using InterfaceLib.MsgInterface;
+using InterfaceLib.MsgInterface.MsgInfo;
 using InterfaceLib.PlugsInterface.CurrencyInterface;
 using InterfaceLib.ServerInterface;
 using SmartQQ.Message;
@@ -17,6 +18,8 @@ namespace SmartQQ
     [Export]
     public class Interface : ICurrencyInterface
     {
+
+        //private List<>
         /// <summary>
         /// 插件被分配的id
         /// </summary>
@@ -139,7 +142,17 @@ namespace SmartQQ
         /// <param name="msgInterface"></param>
         public void ReciverFromServerMsg(IMsgInterface msgInterface)
         {
-            
+            foreach (var item in msgInterface.MsgInfos.Values)
+            {
+                if(item.MessageType == InterfaceLib.MsgInterface.MsgInfo.Enums.MessageType.File)
+                {
+                    ServerInterface.SendMsgToDispla(id, "SmartQQ插件不支持，非文本信息处理!");
+                }
+                else
+                {
+                    dealWithMessage(item as ITextInfo);
+                }
+            }
         }
         /// <summary>
         /// 启动插件
@@ -162,6 +175,15 @@ namespace SmartQQ
         {
             
             return true;
+        }
+
+        /// <summary>
+        /// 处理文本信息
+        /// </summary>
+        /// <param name="textMsgInfo"></param>
+        private void dealWithMessage(ITextInfo textMsgInfo)
+        {
+
         }
     }
 }
